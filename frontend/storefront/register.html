@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | OrlaTrends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body>
+  <main class="customer-shell">
+    <section class="auth-card" aria-labelledby="registerTitle">
+      <div class="auth-mark">
+        <div class="auth-logo">O</div>
+        <h1 id="registerTitle">Create account</h1>
+        <p>Minimal setup only. Shipping and billing addresses are added later from your account or checkout.</p>
+      </div>
+      <form id="registerForm" class="form-grid" novalidate>
+        <div id="registerError" class="error-box"></div>
+        <div class="form-grid two-col">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" name="firstName" type="text" autocomplete="given-name" required>
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" name="lastName" type="text" autocomplete="family-name" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-row">
+            <input id="password" name="password" type="password" autocomplete="new-password" required minlength="8">
+            <button type="button" data-toggle-password>Show</button>
+          </div>
+        </div>
+        <div class="form-note">Password must be at least 8 characters and include uppercase, lowercase and a number.</div>
+        <button class="primary-btn" type="submit">Create account</button>
+      </form>
+      <div class="auth-footer">
+        <span>Already registered?</span>
+        <a href="customer-login.html">Sign in</a>
+      </div>
+    </section>
+  </main>
+  <script src="js/customer-auth.js"></script>
+  <script>
+    document.querySelector("[data-toggle-password]").addEventListener("click", (event) => {
+      const input = document.querySelector("#password");
+      input.type = input.type === "password" ? "text" : "password";
+      event.currentTarget.textContent = input.type === "password" ? "Show" : "Hide";
+    });
+    function validatePassword(password) {
+      if (password.length < 8) return "Password must be at least 8 characters";
+      if (!/[a-z]/.test(password)) return "Password must include a lowercase letter";
+      if (!/[A-Z]/.test(password)) return "Password must include an uppercase letter";
+      if (!/\d/.test(password)) return "Password must include a number";
+      return "";
+    }
+    document.querySelector("#registerForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = event.submitter;
+      const error = document.querySelector("#registerError");
+      const data = OrlaCustomer.formToObject(event.currentTarget);
+      OrlaCustomer.showMessage(error, "");
+      const localError = validatePassword(data.password || "");
+      if (localError) return OrlaCustomer.showMessage(error, localError);
+      OrlaCustomer.setLoading(button, true, "Creating...");
+      try {
+        const response = await OrlaCustomer.api("/api/v1/customer/auth/register", { method: "POST", body: JSON.stringify(data) }, false);
+        OrlaCustomer.setSession(response);
+        window.location.href = "account.html";
+      } catch (err) {
+        OrlaCustomer.showMessage(error, err.message);
+      } finally {
+        OrlaCustomer.setLoading(button, false);
+      }
+    });
+  </script>
+</body>
+</html>

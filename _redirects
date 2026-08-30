@@ -1,0 +1,4 @@
+/admin /admin/index.html 200
+/frontend /frontend/index.html 200
+/:slug.html /product.html 200
+

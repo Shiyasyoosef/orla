@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | OrlaTrends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body>
+  <main class="customer-shell">
+    <section class="auth-card" aria-labelledby="loginTitle">
+      <div class="auth-mark">
+        <div class="auth-logo">O</div>
+        <h1 id="loginTitle">Sign In</h1>
+        <p>Access your OrlaTrends account, saved addresses and faster checkout.</p>
+      </div>
+      <form id="loginForm" class="form-grid" novalidate>
+        <div id="loginError" class="error-box"></div>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-row">
+            <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Password">
+            <button type="button" data-toggle-password>Show</button>
+          </div>
+        </div>
+        <label class="checkbox-row"><input type="checkbox" name="rememberMe" checked> Remember me</label>
+        <button class="primary-btn" type="submit">Sign in</button>
+      </form>
+      <div class="auth-footer">
+        <span>New to OrlaTrends?</span>
+        <a href="register.html" id="createAccountLink">CREATE AN ACCOUNT</a>
+      </div>
+    </section>
+  </main>
+  <script src="js/customer-auth.js"></script>
+  <script>
+    const next = new URLSearchParams(location.search).get("next") || "account.html";
+    document.querySelector("[data-toggle-password]").addEventListener("click", (event) => {
+      const input = document.querySelector("#password");
+      input.type = input.type === "password" ? "text" : "password";
+      event.currentTarget.textContent = input.type === "password" ? "Show" : "Hide";
+    });
+    document.querySelector("#loginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = event.submitter;
+      const error = document.querySelector("#loginError");
+      OrlaCustomer.showMessage(error, "");
+      OrlaCustomer.setLoading(button, true, "Signing in...");
+      try {
+        const form = event.currentTarget;
+        const data = OrlaCustomer.formToObject(form);
+        data.rememberMe = form.rememberMe.checked;
+        const response = await OrlaCustomer.api("/api/v1/customer/auth/login", { method: "POST", body: JSON.stringify(data) }, false);
+        OrlaCustomer.setSession(response);
+        window.location.href = next;
+      } catch (err) {
+        OrlaCustomer.showMessage(error, err.message);
+      } finally {
+        OrlaCustomer.setLoading(button, false);
+      }
+    });
+  </script>
+</body>
+</html>

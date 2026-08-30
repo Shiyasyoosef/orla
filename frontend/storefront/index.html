@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orla Trends | Premium E-Commerce</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap">
+
+  <style>
+    :root {
+      --site-max: 1250px;
+      --page-pad: 4%;
+      --black: #000;
+      --white: #fff;
+      --bg: #fff;
+      --text: #111827;
+      --muted: #64748b;
+      --border: #e5e7eb;
+      --accent: #fce26c;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --logo-width: 150px;
+      --search-width: 680px;
+      --header-height: 72px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    button,
+    input {
+      font: inherit;
+      border: 0;
+      outline: 0;
+      background: none;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .material-symbols-outlined {
+      font-family: "Material Symbols Outlined";
+      font-size: 24px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    }
+
+    .site-header {
+      background: var(--black);
+      color: var(--white);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .header-inner {
+      width: 100%;
+      max-width: var(--site-max);
+      height: var(--header-height);
+      margin: 0 auto;
+      padding: 0 var(--page-pad);
+      display: grid;
+      grid-template-areas: "brand search actions";
+      grid-template-columns: var(--logo-width) minmax(360px, var(--search-width)) auto;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .menu-trigger {
+      display: none;
+      color: var(--white);
+    }
+
+    .brand {
+      grid-area: brand;
+      width: var(--logo-width);
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-img {
+      width: 100%;
+      height: 40px;
+      object-fit: contain;
+      object-position: left center;
+    }
+
+    .search-form {
+      grid-area: search;
+      position: relative;
+      width: 100%;
+      max-width: var(--search-width);
+    }
+
+    .search-icon-btn {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      z-index: 2;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 44px;
+      background: var(--white);
+      color: var(--text);
+      padding: 0 16px 0 46px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .header-actions {
+      grid-area: actions;
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .action-link {
+      color: var(--white);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .action-link:hover {
+      color: var(--accent);
+    }
+
+    .site-nav {
+      background: var(--black);
+      border-top: 1px solid #1f2937;
+    }
+
+    .nav-window {
+      width: 100%;
+      max-width: var(--site-max);
+      margin: 0 auto;
+      padding: 0 var(--page-pad);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-window::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-list {
+      width: max-content;
+      min-width: 100%;
+      min-height: 46px;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-list a {
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .nav-list a:hover {
+      color: var(--accent);
+    }
+
+    .main-grid {
+      width: 100%;
+      max-width: var(--site-max);
+      margin: 0 auto;
+      padding: 18px var(--page-pad) 70px;
+      display: grid;
+      gap: 22px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .hero-slider {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #e5e7eb;
+    }
+
+    .hero-slide {
+      display: none;
+    }
+
+    .hero-slide.is-active {
+      display: block;
+    }
+
+    .hero-slide img,
+    .banner-image {
+      width: 100%;
+      aspect-ratio: 18 / 5;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 10px;
+    }
+
+    .slider-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%) translateX(var(--arrow-rest, 0));
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.38);
+      color: var(--black);
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.26s ease, transform 0.26s ease, background 0.26s ease, box-shadow 0.26s ease;
+      z-index: 5;
+    }
+
+    .slider-btn .material-symbols-outlined {
+      font-size: 30px;
+    }
+
+    .slider-btn.prev {
+      left: 14px;
+      --arrow-rest: -10px;
+    }
+
+    .slider-btn.next {
+      right: 14px;
+      --arrow-rest: 10px;
+    }
+
+    .hero-slider.is-arrow-visible .slider-btn,
+    .hero-slider:hover .slider-btn,
+    .hero-slider:focus-within .slider-btn {
+      --arrow-rest: 0px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .slider-btn:hover {
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.22);
+    }
+
+    .slider-btn.prev:hover {
+      animation: floatPrevArrow 0.9s ease-in-out infinite alternate;
+    }
+
+    .slider-btn.next:hover {
+      animation: floatNextArrow 0.9s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatPrevArrow {
+      from {
+        transform: translateY(-50%) translateX(-4px);
+      }
+
+      to {
+        transform: translateY(-50%) translateX(1px);
+      }
+    }
+
+    @keyframes floatNextArrow {
+      from {
+        transform: translateY(-50%) translateX(4px);
+      }
+
+      to {
+        transform: translateY(-50%) translateX(-1px);
+      }
+    }
+
+    .hero-dots {
+      position: absolute;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 7px;
+      z-index: 5;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+    }
+
+    .dot.is-active {
+      width: 20px;
+      background: var(--white);
+    }
+
+    .category-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cat-scroll-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,.10);
+    }
+
+    .category-scroll {
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .category-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-row {
+      width: max-content;
+      min-width: 100%;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 140px;
+      gap: 12px;
+      padding-bottom: 3px;
+    }
+
+    .category-item {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      overflow: visible;
+      box-shadow: none;
+      scroll-snap-align: start;
+    }
+
+    .cat-img-wrap {
+      width: 100%;
+      aspect-ratio: 220 / 284;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      overflow: hidden;
+      box-shadow: none;
+      margin: 0;
+    }
+
+    .cat-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .promo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .promo-card {
+      overflow: hidden;
+      border-radius: 10px;
+      background: var(--white);
+      border: 1px solid var(--border);
+    }
+
+    .promo-card img {
+      width: 100%;
+      aspect-ratio: 18 / 6;
+      object-fit: cover;
+    }
+
+    .results-bar {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .results-bar h2 {
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.25;
+    }
+
+    .results-bar strong {
+      font-weight: 800;
+    }
+
+    .view-icon {
+      color: var(--muted);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .product-card {
+      position: relative;
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .product-card-link {
+      display: block;
+      height: 100%;
+    }
+
+    .img-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      background: #eef2f7;
+    }
+
+    .img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .badge-premium {
+      position: absolute;
+      left: 9px;
+      top: 9px;
+      background: var(--white);
+      color: var(--black);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 5px 7px;
+      border-radius: 4px;
+    }
+
+    .heart-btn {
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.92);
+      color: #334155;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+
+    .badge-bottom {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      color: var(--white);
+      background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.75));
+      padding: 18px 9px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .card-details {
+      padding: 11px;
+    }
+
+    .product-title {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.35;
+      min-height: 38px;
+      margin-bottom: 7px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .rating-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+
+    .rating-star {
+      color: var(--green);
+      font-size: 18px;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 7px;
+    }
+
+    .currency,
+    .current-price {
+      font-weight: 900;
+    }
+
+    .current-price {
+      font-size: 17px;
+    }
+
+    .old-price {
+      color: #9ca3af;
+      text-decoration: line-through;
+      font-size: 13px;
+    }
+
+    .discount-tag {
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .offer-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .offer-badge {
+      background: #dcfce7;
+      color: #065f46;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 5px 7px;
+      border-radius: 5px;
+    }
+
+    .express {
+      display: inline-flex;
+      align-items: center;
+      width: max-content;
+      background: #fff200;
+      color: #111827;
+      font-style: italic;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 4px 8px;
+      border-radius: 999px 4px 999px 4px;
+    }
+
+    .delivery-info {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .floating-filter,
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    .site-footer {
+      background: var(--white);
+      border-top: 0;
+      padding: 0;
+    }
+
+    .desktop-footer {
+      display: block;
+      background: var(--white);
+      color: #101827;
+    }
+
+    .mobile-footer-content {
+      display: none;
+    }
+
+    .desktop-help-bar {
+      background: #f1f3f8;
+      border-top: 1px solid #e2e6ef;
+      border-bottom: 1px solid #e2e6ef;
+      padding: 20px 32px;
+    }
+
+    .desktop-help-inner {
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .desktop-help-copy h2 {
+      color: #2d3440;
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .desktop-help-copy p {
+      color: #7c8494;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .desktop-support-row {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      flex: 0 0 auto;
+    }
+
+    .support-item {
+      display: grid;
+      grid-template-columns: 42px auto;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .support-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--white);
+      color: #3f4652;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .support-label {
+      display: block;
+      color: #8b929f;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .support-value {
+      color: #0b0f17;
+      font-size: 16px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .desktop-footer-main {
+      width: 100%;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 48px 40px 38px;
+    }
+
+    .desktop-footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 16px 28px;
+      margin-bottom: 50px;
+    }
+
+    .desktop-footer-links a {
+      color: #0a0a0a;
+      font-size: 24px;
+      line-height: 1.1;
+      font-weight: 400;
+    }
+
+    .desktop-footer-links a:hover,
+    .desktop-bottom-links a:hover {
+      color: var(--blue);
+    }
+
+    .desktop-footer-middle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+      gap: 34px;
+    }
+
+    .desktop-apps {
+      text-align: center;
+    }
+
+    .desktop-footer-kicker {
+      color: #2f3744;
+      font-size: 15px;
+      line-height: 1;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .desktop-app-badges {
+      width: 390px;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    .desktop-social {
+      text-align: center;
+    }
+
+    .desktop-social-row {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .desktop-social-link {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #050505;
+      color: var(--white);
+      display: grid;
+      place-items: center;
+      line-height: 0;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .desktop-social-link:hover {
+      background: #1f2937;
+      transform: translateY(-2px);
+    }
+
+    .desktop-social-link svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .desktop-footer-bottom {
+      background: #f1f3f8;
+      border-top: 1px solid #e2e6ef;
+      padding: 20px 32px;
+    }
+
+    .desktop-bottom-inner {
+      width: 100%;
+      max-width: 1840px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(190px, 1fr) minmax(320px, 420px) minmax(300px, 1fr);
+      align-items: center;
+      gap: 24px;
+    }
+
+    .desktop-copy {
+      color: #6d7481;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .desktop-payment-strip {
+      width: 390px;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .desktop-bottom-links {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 16px 28px;
+    }
+
+    .desktop-bottom-links a {
+      color: #3f4652;
+      font-size: 15px;
+      line-height: 1.2;
+      font-weight: 500;
+    }
+
+    .footer-inner {
+      width: 100%;
+      max-width: 733px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .footer-title {
+      color: #343946;
+      font-size: 29px;
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1;
+      margin-bottom: 58px;
+    }
+
+    .social-row,
+    .payment-row,
+    .footer-links {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .social-row {
+      gap: 40px;
+      margin-bottom: 43px;
+    }
+
+    .social-link {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 1px solid #e8eaee;
+      background: #fff;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 1px 7px rgba(15, 23, 42, 0.08);
+      line-height: 0;
+    }
+
+    .social-link span {
+      width: 47px;
+      height: 47px;
+      border-radius: 50%;
+      background: #050505;
+      display: grid;
+      place-items: center;
+    }
+
+    .social-link svg {
+      width: 27px;
+      height: 27px;
+      fill: currentColor;
+      display: block;
+    }
+
+    .footer-copy {
+      color: #8e95a3;
+      font-size: 28px;
+      line-height: 1.35;
+      font-weight: 400;
+      margin-bottom: 12px;
+    }
+
+    .payment-row {
+      gap: 28px;
+      margin-bottom: 56px;
+    }
+
+    .payment-strip {
+      width: 647px;
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .payment-card {
+      min-width: 82px;
+      height: 54px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #111827;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    .payment-card.visa {
+      background: #153fbe;
+      color: #fff;
+      font-style: italic;
+      font-size: 24px;
+    }
+
+    .payment-card.gpay {
+      min-width: 128px;
+      gap: 4px;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      font-size: 46px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .payment-card.gpay .g {
+      color: #4285f4;
+      font-size: 47px;
+      font-weight: 900;
+      font-family: Arial, sans-serif;
+    }
+
+    .payment-card.phonepe {
+      min-width: 58px;
+      background: #4d2ca8;
+      color: #fff;
+      font-size: 28px;
+      border-radius: 11px;
+      font-weight: 900;
+    }
+
+    .payment-card.amex {
+      min-width: 76px;
+      background: #1688c9;
+      color: #fff;
+      font-size: 16px;
+      line-height: 0.9;
+    }
+
+    .payment-card.cash {
+      min-width: 76px;
+      color: #5f9454;
+      border: 3px solid #79a86d;
+      font-size: 18px;
+      box-shadow: none;
+    }
+
+    .payment-card.mastercard {
+      position: relative;
+      min-width: 82px;
+      gap: 0;
+    }
+
+    .mc-circle {
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      display: inline-block;
+      opacity: 0.95;
+    }
+
+    .mc-red {
+      background: #eb001b;
+      margin-right: -10px;
+    }
+
+    .mc-yellow {
+      background: #f79e1b;
+    }
+
+    .footer-links {
+      gap: 24px 46px;
+    }
+
+    .footer-links a {
+      color: #3f4652;
+      font-size: 28px;
+      line-height: 1.2;
+      font-weight: 400;
+    }
+
+    .footer-links a:hover {
+      color: var(--blue);
+    }
+
+    .back-to-top {
+      position: fixed;
+      right: 24px;
+      bottom: 34px;
+      z-index: 970;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #050505;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(14px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .back-to-top.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .whatsapp-widget {
+      position: fixed;
+      right: 22px;
+      bottom: 128px;
+      z-index: 980;
+      display: block;
+    }
+
+    .whatsapp-chat {
+      min-height: 64px;
+      border-radius: 999px;
+      background: #25d366;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 9px 18px 9px 10px;
+      box-shadow: 0 15px 35px rgba(22, 163, 74, 0.34);
+    }
+
+    .whatsapp-icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: transparent;
+      flex: 0 0 auto;
+    }
+
+    .whatsapp-icon img {
+      width: 38px;
+      height: 38px;
+      display: block;
+      filter: brightness(0) invert(1);
+    }
+
+    .whatsapp-text {
+      display: grid;
+      gap: 2px;
+      text-align: left;
+      line-height: 1;
+    }
+
+    .whatsapp-text strong {
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .whatsapp-text span {
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+
+    .whatsapp-close {
+      position: absolute;
+      left: -8px;
+      top: -8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--white);
+      color: #263238;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+      z-index: 1;
+    }
+
+    .whatsapp-widget.is-hidden {
+      display: none;
+    }
+
+    @media (max-width: 1280px) {
+      .desktop-support-row {
+        gap: 22px;
+      }
+
+      .desktop-help-bar {
+        padding-inline: 24px;
+      }
+
+      .desktop-footer-main {
+        padding: 42px 28px 34px;
+      }
+
+      .desktop-footer-links {
+        gap: 16px 22px;
+        margin-bottom: 42px;
+      }
+
+      .desktop-footer-links a {
+        font-size: 21px;
+      }
+
+      .desktop-bottom-inner {
+        grid-template-columns: minmax(170px, 1fr) minmax(280px, 360px) minmax(260px, 1fr);
+        gap: 20px;
+      }
+
+      .desktop-payment-strip {
+        width: 340px;
+      }
+
+      .desktop-bottom-links {
+        gap: 14px 20px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .desktop-help-inner,
+      .desktop-footer-middle,
+      .desktop-bottom-inner {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+        justify-items: center;
+        text-align: center;
+      }
+
+      .desktop-support-row,
+      .desktop-bottom-links {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .header-inner {
+        grid-template-columns: 132px minmax(260px, 1fr) auto;
+        gap: 18px;
+      }
+
+      .brand {
+        width: 132px;
+      }
+
+      .desktop-only {
+        display: none;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .slider-btn {
+        width: 42px;
+        height: 50px;
+        border-radius: 999px;
+      }
+
+      .slider-btn.prev {
+        left: 10px;
+        --arrow-rest: -8px;
+      }
+
+      .slider-btn.next {
+        right: 10px;
+        --arrow-rest: 8px;
+      }
+
+      .desktop-help-bar {
+        padding: 16px 20px;
+      }
+
+      .desktop-help-inner {
+        gap: 22px;
+      }
+
+      .desktop-help-copy h2 {
+        font-size: 20px;
+        margin-bottom: 4px;
+      }
+
+      .desktop-help-copy p {
+        font-size: 14px;
+      }
+
+      .desktop-support-row {
+        gap: 16px;
+      }
+
+      .support-item {
+        grid-template-columns: 36px auto;
+        gap: 10px;
+      }
+
+      .support-icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .support-icon .material-symbols-outlined {
+        font-size: 21px;
+      }
+
+      .support-label {
+        font-size: 10px;
+        margin-bottom: 3px;
+      }
+
+      .support-value {
+        font-size: 14px;
+      }
+
+      .desktop-footer-main {
+        padding: 32px 22px 28px;
+      }
+
+      .desktop-footer-links {
+        gap: 12px 18px;
+        margin-bottom: 30px;
+      }
+
+      .desktop-footer-links a {
+        font-size: 18px;
+      }
+
+      .desktop-footer-middle {
+        gap: 24px;
+      }
+
+      .desktop-footer-kicker {
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+
+      .desktop-app-badges {
+        width: 300px;
+      }
+
+      .desktop-social-row {
+        gap: 10px;
+      }
+
+      .desktop-social-link {
+        width: 38px;
+        height: 38px;
+      }
+
+      .desktop-social-link svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .desktop-footer-bottom {
+        padding: 16px 20px;
+      }
+
+      .desktop-copy,
+      .desktop-bottom-links a {
+        font-size: 13px;
+      }
+
+      .desktop-payment-strip {
+        width: 300px;
+      }
+
+      .footer-title {
+        font-size: 24px;
+      }
+
+      .footer-copy {
+        font-size: 22px;
+      }
+
+      .footer-links a {
+        font-size: 22px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding-bottom: 76px;
+      }
+
+      .desktop-footer {
+        display: none;
+      }
+
+      .mobile-footer-content {
+        display: block;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .header-inner {
+        height: auto;
+        padding: 12px var(--page-pad);
+        grid-template-areas:
+          "menu brand actions"
+          "search search search";
+        grid-template-columns: 44px minmax(0, 1fr) 44px;
+        gap: 12px 8px;
+      }
+
+      .menu-trigger {
+        grid-area: menu;
+        width: 44px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        color: var(--white);
+      }
+
+      .brand {
+        grid-area: brand;
+        width: 170px;
+        justify-self: center;
+      }
+
+      .logo-img {
+        height: auto;
+        object-position: center;
+      }
+
+      .header-actions {
+        grid-area: actions;
+        justify-self: end;
+        gap: 0;
+      }
+
+      .account-link,
+      .cart-link {
+        display: none;
+      }
+
+      .wishlist-link {
+        width: 44px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+      }
+
+      .wishlist-link .material-symbols-outlined {
+        font-size: 30px;
+      }
+
+      .search-form {
+        grid-area: search;
+        max-width: none;
+        width: 100%;
+      }
+
+      .search-input {
+        width: 100%;
+        height: 48px;
+        border-radius: 12px;
+        padding-left: 50px;
+        background: var(--white);
+        font-size: 15px;
+      }
+
+      .search-icon-btn {
+        left: 16px;
+      }
+
+      .nav-window {
+        max-width: 100vw;
+        padding: 0;
+      }
+
+      .nav-list {
+        min-width: max-content;
+        gap: 24px;
+        padding: 0 18px;
+        min-height: 48px;
+      }
+
+      .nav-list a {
+        font-size: 14px;
+        text-transform: none;
+      }
+
+      .main-grid {
+        padding: 14px 12px 26px;
+        gap: 20px;
+      }
+
+      .hero-slide img,
+      .banner-image {
+        aspect-ratio: 16 / 7.2;
+      }
+
+      .slider-btn {
+        display: grid;
+        width: 38px;
+        height: 52px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.76);
+      }
+
+      .slider-btn.prev {
+        left: 8px;
+        --arrow-rest: -8px;
+      }
+
+      .slider-btn.next {
+        right: 8px;
+        --arrow-rest: 8px;
+      }
+
+      .slider-btn .material-symbols-outlined {
+        font-size: 28px;
+      }
+
+      .category-controls {
+        display: none;
+      }
+
+      .category-row {
+        grid-auto-columns: 118px;
+        gap: 10px;
+      }
+
+      .promo-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .promo-card img {
+        aspect-ratio: 16 / 6.4;
+      }
+
+      .results-bar {
+        border-radius: 0;
+        margin-inline: -12px;
+        border-left: 0;
+        border-right: 0;
+        padding: 12px 14px;
+      }
+
+      .results-bar h2 {
+        font-size: 15px;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .product-card {
+        border-radius: 8px;
+      }
+
+      .card-details {
+        padding: 9px;
+      }
+
+      .product-title {
+        font-size: 13px;
+        min-height: 36px;
+      }
+
+      .current-price {
+        font-size: 16px;
+      }
+
+      .offer-badge {
+        font-size: 11px;
+      }
+
+      .floating-filter {
+        display: none !important;
+      }
+
+      .mobile-bottom-nav {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        z-index: 950;
+        height: 66px;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        border-radius: 22px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        align-items: center;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+        transition: transform 0.28s ease, opacity 0.28s ease;
+      }
+
+      body.nav-hidden .mobile-bottom-nav {
+        transform: translateY(120%);
+        opacity: 0;
+      }
+
+      .bottom-link {
+        height: 100%;
+        color: #4b5563;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 2px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .bottom-link.is-active {
+        color: var(--blue);
+      }
+
+      .site-footer {
+        display: block;
+        padding: 24px 16px 16px;
+      }
+
+      .footer-title {
+        font-size: 20px;
+        margin-bottom: 24px;
+      }
+
+      .social-row {
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .social-link {
+        width: 54px;
+        height: 54px;
+      }
+
+      .social-link span {
+        width: 36px;
+        height: 36px;
+      }
+
+      .social-link svg {
+        width: 21px;
+        height: 21px;
+      }
+
+      .footer-copy {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      .payment-row {
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+
+      .payment-strip {
+        width: min(100%, 520px);
+      }
+
+      .payment-card {
+        min-width: 58px;
+        height: 40px;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+
+      .payment-card.gpay {
+        min-width: 92px;
+        font-size: 31px;
+      }
+
+      .payment-card.gpay .g {
+        font-size: 33px;
+      }
+
+      .payment-card.phonepe {
+        min-width: 44px;
+        font-size: 24px;
+      }
+
+      .payment-card.amex {
+        min-width: 54px;
+        font-size: 12px;
+      }
+
+      .payment-card.cash {
+        min-width: 56px;
+        border-width: 2px;
+        font-size: 13px;
+      }
+
+      .mc-circle {
+        width: 20px;
+        height: 20px;
+      }
+
+      .mc-red {
+        margin-right: -8px;
+      }
+
+      .footer-links {
+        gap: 12px 22px;
+      }
+
+      .footer-links a {
+        font-size: 17px;
+      }
+
+      .whatsapp-widget {
+        right: 16px;
+        bottom: 88px;
+      }
+
+      .back-to-top {
+        right: 16px;
+        bottom: 164px;
+        width: 42px;
+        height: 42px;
+      }
+
+      .whatsapp-chat {
+        width: 66px;
+        min-width: 66px;
+        height: 66px;
+        min-height: 66px;
+        padding: 8px;
+        justify-content: center;
+      }
+
+      .whatsapp-icon {
+        width: 52px;
+        height: 52px;
+        background: transparent;
+      }
+
+      .whatsapp-icon img {
+        width: 42px;
+        height: 42px;
+      }
+
+      .whatsapp-text {
+        display: none;
+      }
+    }
+
+    @media (max-width: 1024px), (hover: none) {
+      .hero-slider:hover .slider-btn,
+      .hero-slider:focus-within .slider-btn {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-50%) translateX(var(--arrow-rest, 0));
+      }
+
+      .hero-slider.is-arrow-visible .slider-btn {
+        --arrow-rest: 0px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .site-footer {
+        padding: 22px 14px 16px;
+      }
+
+      .footer-title {
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+
+      .social-row {
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .social-link {
+        width: 50px;
+        height: 50px;
+      }
+
+      .social-link span {
+        width: 34px;
+        height: 34px;
+      }
+
+      .social-link svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .footer-copy {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+
+      .payment-row {
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+
+      .payment-card {
+        min-width: 58px;
+        height: 40px;
+        border-radius: 7px;
+        font-size: 16px;
+      }
+
+      .payment-card.gpay {
+        min-width: 92px;
+        font-size: 31px;
+      }
+
+      .payment-card.gpay .g {
+        font-size: 33px;
+      }
+
+      .payment-card.phonepe {
+        min-width: 44px;
+        font-size: 24px;
+      }
+
+      .payment-card.amex {
+        min-width: 54px;
+        font-size: 12px;
+      }
+
+      .payment-card.cash {
+        min-width: 56px;
+        border-width: 2px;
+        font-size: 13px;
+      }
+
+      .mc-circle {
+        width: 20px;
+        height: 20px;
+      }
+
+      .mc-red {
+        margin-right: -8px;
+      }
+
+      .footer-links {
+        gap: 10px 18px;
+      }
+
+      .footer-links a {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .brand {
+        width: 150px;
+      }
+
+      .main-grid {
+        padding-inline: 10px;
+      }
+
+      .results-bar {
+        margin-inline: -10px;
+      }
+
+      .product-grid {
+        gap: 8px;
+      }
+
+      .card-details {
+        padding: 8px;
+      }
+
+      .badge-bottom {
+        font-size: 10px;
+      }
+
+      .site-footer {
+        padding-inline: 12px;
+      }
+
+      .footer-title {
+        font-size: 17px;
+        margin-bottom: 18px;
+      }
+
+      .social-row {
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .social-link {
+        width: 46px;
+        height: 46px;
+      }
+
+      .social-link span {
+        width: 31px;
+        height: 31px;
+      }
+
+      .social-link svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .payment-row {
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+
+      .footer-links {
+        gap: 10px 16px;
+      }
+
+      .footer-links a {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="menu-trigger" type="button" aria-label="Open menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <a href="index.html" class="brand" aria-label="Orla Trends home">
+        <img src="assets/images/brand/orlalogo1.jpg" alt="Orla Trends" class="logo-img">
+      </a>
+
+      <form class="search-form" role="search">
+        <button class="search-icon-btn" type="submit" aria-label="Search">
+          <span class="material-symbols-outlined">search</span>
+        </button>
+        <input class="search-input" type="search" placeholder="What are you looking for?" aria-label="Search products">
+      </form>
+
+      <div class="header-actions">
+        <a href="#" class="action-link account-link" aria-label="Account">
+          <span class="material-symbols-outlined">account_circle</span>
+          <span class="desktop-only">Sign In</span>
+        </a>
+        <a href="#" class="action-link wishlist-link" aria-label="Wishlist">
+          <span class="material-symbols-outlined">favorite</span>
+        </a>
+        <a href="#" class="action-link cart-link" aria-label="Cart">
+          <span class="material-symbols-outlined">shopping_cart_checkout</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="site-nav" aria-label="Main navigation">
+    <div class="nav-window">
+      <ul class="nav-list">
+        <li><a href="#">Kurta Sets</a></li>
+        <li><a href="#">Dresses</a></li>
+        <li><a href="#">Sarees</a></li>
+        <li><a href="#">Jeans</a></li>
+        <li><a href="#">Kurtis</a></li>
+        <li><a href="#">Tops</a></li>
+        <li><a href="#">Lehenga</a></li>
+        <li><a href="#">Abayas</a></li>
+        <li><a href="#">New In</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="main-grid">
+    <section>
+      <div class="hero-slider" id="heroSlider">
+        <div class="hero-slide is-active">
+          <img data-img="assets/images/banners/Banner1.png" alt="Eid fashion sale">
+        </div>
+        <div class="hero-slide">
+          <img data-img="assets/images/banners/Banner2.png" alt="Fashion sale">
+        </div>
+        <div class="hero-slide">
+          <img data-img="assets/images/banners/Banner3.png" alt="New arrivals">
+        </div>
+
+        <button class="slider-btn prev" type="button" aria-label="Previous banner">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <button class="slider-btn next" type="button" aria-label="Next banner">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+
+        <div class="hero-dots">
+          <button class="dot is-active" type="button" aria-label="Show slide 1"></button>
+          <button class="dot" type="button" aria-label="Show slide 2"></button>
+          <button class="dot" type="button" aria-label="Show slide 3"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="category-section">
+      <div class="section-head">
+        <h2 class="section-title">Shop by Category</h2>
+        <div class="category-controls">
+          <button class="cat-scroll-btn cat-prev" type="button" aria-label="Previous categories">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button class="cat-scroll-btn cat-next" type="button" aria-label="Next categories">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="category-scroll" id="categoryScroll">
+        <div class="category-row">
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Newin.png" alt="New In"></div></a>
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Dresses.png" alt="Dresses"></div></a>
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Abayas.png" alt="Abayas"></div></a>
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Tops & Tees.png" alt="Tops and Tees"></div></a>
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Jalabiyas.png" alt="Jalabiyas"></div></a>
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/shirts.png" alt="Shirts"></div></a>
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Jeans.png" alt="Jeans"></div></a>
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Skirts.png" alt="Skirts"></div></a>
+          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Sports.png" alt="Sports"></div></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="promo-grid">
+      <a href="#" class="promo-card">
+        <img data-img="assets/images/banners/Banner2.png" alt="Fashion sale promotion">
+      </a>
+      <a href="#" class="promo-card">
+        <img data-img="assets/images/banners/Banner1.png" alt="Eid sale promotion">
+      </a>
+    </section>
+
+    <section>
+      <div class="results-bar">
+        <h2>12 Results for <strong>"Women's Fashion in UAE"</strong></h2>
+        <span class="material-symbols-outlined view-icon">view_list</span>
+      </div>
+
+      <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <section>
+      <img data-img="assets/images/banners/Banner2.png" alt="Fashion sale banner" class="banner-image">
+    </section>
+  </main>
+
+  <div class="floating-filter">
+    <span>Sort By</span>
+    <span class="material-symbols-outlined">swap_vert</span>
+    <span>|</span>
+    <span>Filter</span>
+    <span class="material-symbols-outlined">filter_alt</span>
+  </div>
+
+  <nav class="mobile-bottom-nav" aria-label="Mobile bottom navigation">
+    <a href="#" class="bottom-link is-active"><span class="material-symbols-outlined">home</span><span>Home</span></a>
+    <a href="#" class="bottom-link"><span class="material-symbols-outlined">category</span><span>Categories</span></a>
+    <a href="#" class="bottom-link"><span class="material-symbols-outlined">sell</span><span>Sale</span></a>
+    <a href="#" class="bottom-link"><span class="material-symbols-outlined">account_circle</span><span>Account</span></a>
+    <a href="#" class="bottom-link"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="desktop-footer">
+      <section class="desktop-help-bar" aria-label="Support">
+        <div class="desktop-help-inner">
+          <div class="desktop-help-copy">
+            <h2>We're Always Here To Help</h2>
+            <p>Reach out to us through any of these support channels</p>
+          </div>
+
+          <div class="desktop-support-row">
+            <a href="mailto:enq@orlatrends.com" class="support-item">
+              <span class="support-icon material-symbols-outlined">info</span>
+              <span>
+                <span class="support-label">Help Center</span>
+                <strong class="support-value">enq@orlatrends.com</strong>
+              </span>
+            </a>
+            <a href="mailto:info@orlatrends.com" class="support-item">
+              <span class="support-icon material-symbols-outlined">mail</span>
+              <span>
+                <span class="support-label">Email Support</span>
+                <strong class="support-value">info@orlatrends.com</strong>
+              </span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <div class="desktop-footer-main">
+        <nav class="desktop-footer-links" aria-label="Footer links">
+          <a href="#">About us</a>
+          <a href="#">Contact us</a>
+          <a href="#">My account</a>
+          <a href="#">Order history</a>
+          <a href="#">Advanced search</a>
+          <a href="#">Order Tracking</a>
+          <a href="#">Return Policy</a>
+          <a href="#">Privacy Policy</a>
+        </nav>
+
+        <div class="desktop-footer-middle">
+          <div class="desktop-apps">
+            <h3 class="desktop-footer-kicker">Shop On The Go</h3>
+            <img class="desktop-app-badges" src="images/footer/desktop-app-badges.png" alt="Download on the App Store, get it on Google Play, and explore it on AppGallery">
+          </div>
+
+          <div class="desktop-social">
+            <h3 class="desktop-footer-kicker">Connect With Us</h3>
+            <ul class="desktop-social-row" aria-label="Social links">
+              <li>
+                <a href="https://www.facebook.com/share/1UfpTrY3ah/" class="desktop-social-link" aria-label="Facebook" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14.2 8.3h2.3V4.4c-.4-.1-1.8-.2-3.4-.2-3.3 0-5.6 2-5.6 5.7v3.2H3.8v4.4h3.7V24h4.5v-6.5h3.7l.6-4.4H12V10.3c0-1.3.4-2 2.2-2Z"></path>
+                  </svg>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="desktop-social-link" aria-label="LinkedIn">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5ZM.33 8h4.32v14H.33V8Zm7.65 0h4.14v1.92h.06c.58-1.1 1.99-2.26 4.1-2.26 4.39 0 5.2 2.89 5.2 6.64V22h-4.31v-6.83c0-1.63-.03-3.73-2.27-3.73-2.28 0-2.63 1.78-2.63 3.61V22H7.98V8Z"></path>
+                  </svg>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.instagram.com/orla_trends?igsh=MXV4bGw1ODhnMHN6cA==" class="desktop-social-link" aria-label="Instagram" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4.2" y="4.2" width="15.6" height="15.6" rx="4.5" fill="none" stroke="currentColor" stroke-width="2.2"></rect>
+                    <circle cx="12" cy="12" r="3.8" fill="none" stroke="currentColor" stroke-width="2.2"></circle>
+                    <circle cx="16.9" cy="7.1" r="1.2"></circle>
+                  </svg>
+                </a>
+              </li>
+              <li>
+                <a href="https://youtube.com/@orla_trends?si=OPtbsag8vUPmUopL" class="desktop-social-link" aria-label="YouTube" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M22.2 7.1a3 3 0 0 0-2.1-2.1C18.2 4.5 12 4.5 12 4.5s-6.2 0-8.1.5a3 3 0 0 0-2.1 2.1 31.3 31.3 0 0 0-.5 4.9 31.3 31.3 0 0 0 .5 4.9A3 3 0 0 0 3.9 19c1.9.5 8.1.5 8.1.5s6.2 0 8.1-.5a3 3 0 0 0 2.1-2.1 31.3 31.3 0 0 0 .5-4.9 31.3 31.3 0 0 0-.5-4.9ZM9.8 15.2V8.8l5.7 3.2-5.7 3.2Z"></path>
+                  </svg>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="desktop-footer-bottom">
+        <div class="desktop-bottom-inner">
+          <p class="desktop-copy">&copy; 2026 orlatrends. All Rights Reserved</p>
+          <img class="desktop-payment-strip" src="images/footer/desktop-payment-options.png" alt="Mastercard, Visa, Tabby, Tamara, American Express, and Cash payment options">
+          <nav class="desktop-bottom-links" aria-label="Legal links">
+            <a href="#">Warranty Policy</a>
+            <a href="#">Sell with us</a>
+            <a href="#">Terms of Use</a>
+            <a href="#">Terms of Sale</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-footer-content">
+      <div class="footer-inner">
+        <h2 class="footer-title">CONNECT WITH US</h2>
+
+        <ul class="social-row" aria-label="Social links">
+          <li>
+            <a href="https://www.facebook.com/share/1UfpTrY3ah/" class="social-link" aria-label="Facebook" target="_blank" rel="noopener">
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14.2 8.3h2.3V4.4c-.4-.1-1.8-.2-3.4-.2-3.3 0-5.6 2-5.6 5.7v3.2H3.8v4.4h3.7V24h4.5v-6.5h3.7l.6-4.4H12V10.3c0-1.3.4-2 2.2-2Z"></path>
+                </svg>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/orla_trends?igsh=MXV4bGw1ODhnMHN6cA==" class="social-link" aria-label="Instagram" target="_blank" rel="noopener">
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4.2" y="4.2" width="15.6" height="15.6" rx="4.5" fill="none" stroke="currentColor" stroke-width="2.2"></rect>
+                  <circle cx="12" cy="12" r="3.8" fill="none" stroke="currentColor" stroke-width="2.2"></circle>
+                  <circle cx="16.9" cy="7.1" r="1.2"></circle>
+                </svg>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="https://youtube.com/@orla_trends?si=OPtbsag8vUPmUopL" class="social-link" aria-label="YouTube" target="_blank" rel="noopener">
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22.2 7.1a3 3 0 0 0-2.1-2.1C18.2 4.5 12 4.5 12 4.5s-6.2 0-8.1.5a3 3 0 0 0-2.1 2.1 31.3 31.3 0 0 0-.5 4.9 31.3 31.3 0 0 0 .5 4.9A3 3 0 0 0 3.9 19c1.9.5 8.1.5 8.1.5s6.2 0 8.1-.5a3 3 0 0 0 2.1-2.1 31.3 31.3 0 0 0 .5-4.9 31.3 31.3 0 0 0-.5-4.9ZM9.8 15.2V8.8l5.7 3.2-5.7 3.2Z"></path>
+                </svg>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="social-link" aria-label="X">
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14.4 10.4 22 2h-1.8l-6.6 7.3L8.3 2H2.2l8 11-8 9h1.8l7-7.8 5.6 7.8h6.1l-8.3-11.6Zm-2.5 2.8-.8-1.1L4.7 3.4h2.8l5.2 7.1.8 1.1 6.7 9h-2.8l-5.5-7.4Z"></path>
+                </svg>
+              </span>
+            </a>
+          </li>
+        </ul>
+
+        <p class="footer-copy">&copy; 2026 Orlatrends&nbsp;&nbsp; All Rights Reserved</p>
+
+        <div class="payment-row" aria-label="Payment methods">
+          <img class="payment-strip" src="images/footer/payment-options.png" alt="Mastercard, Visa, Google Pay, PhonePe, American Express, and Cash payment options">
+        </div>
+
+        <nav class="footer-links" aria-label="Footer links">
+          <a href="#">Abouts</a>
+          <a href="#">Warranty Policy</a>
+          <a href="#">Sell with us</a>
+          <a href="#">Terms of Use</a>
+          <a href="#">Privacy Policy</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <div class="whatsapp-widget" id="whatsappWidget">
+    <button class="whatsapp-close" type="button" aria-label="Close WhatsApp chat">x</button>
+    <a class="whatsapp-chat" href="https://wa.me/917306818132?text=Hi%20Orla%20Trends%2C%20I%20need%20help" target="_blank" rel="noopener" aria-label="Chat with Orla Trends on WhatsApp">
+      <span class="whatsapp-icon">
+        <img src="icons/whatsapp-121.svg" alt="" aria-hidden="true">
+      </span>
+      <span class="whatsapp-text">
+        <strong>WhatsApp</strong>
+        <span>Chat now</span>
+      </span>
+    </a>
+  </div>
+
+  <button class="back-to-top" type="button" aria-label="Back to top">
+    <span class="material-symbols-outlined">arrow_upward</span>
+  </button>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const extensions = ["avif", "webp", "jpg", "jpeg", "png", "gif", "svg"];
+
+      function loadImage(img, baseName) {
+        if (!baseName) return;
+        let clean = baseName.replace(/^\/?(assets\/)?/, "assets/");
+        const hasExtension = /\.[a-z0-9]+$/i.test(clean);
+        
+        const variations = [clean];
+        if (!hasExtension) {
+          variations.push(clean + ".png", clean + ".jpg", clean + ".jpeg", clean + ".webp", clean + ".svg");
+          // Add case & naming aliases
+          variations.push(clean.replace("/banner3", "/Banner3") + ".png");
+          variations.push(clean.replace("/new_in", "/Newin") + ".png");
+          variations.push(clean.replace("/dresses", "/Dresses") + ".png");
+          variations.push(clean.replace("/jalabiyas", "/Jalabiyas") + ".png");
+          variations.push(clean.replace("/Jeancs", "/Jeans") + ".png");
+          variations.push(clean.replace("/Top&Tees", "/Tops & Tees") + ".png");
+          variations.push(clean.replace("/Product/product", "/products/Product") + ".jpg");
+        }
+
+        let idx = 0;
+        function tryNext() {
+          if (idx >= variations.length) return;
+          img.src = variations[idx];
+          idx++;
+        }
+        img.addEventListener("error", tryNext);
+        tryNext();
+      }
+
+        
+
+      const products = [
+        { id: "product1", img: "assets/images/products/Product1.jpg", title: "Premium Modest Dress", price: "569", old: "699", rating: "4.8 (18)" },
+        { id: "product2", img: "assets/images/products/Product2.jpg", title: "Elegant Occasion Dress", price: "459", old: "599", rating: "4.6 (22)" },
+        { id: "product3", img: "assets/images/products/Product3.jpg", title: "Printed Maxi Dress", price: "399", old: "549", rating: "4.5 (16)" },
+        { id: "product4", img: "assets/images/products/Product4.jpg", title: "Floral Casual Dress", price: "349", old: "499", rating: "4.4 (13)" },
+        { id: "product5", img: "assets/images/products/Product5.jpg", title: "Classic Women's Outfit", price: "299", old: "429", rating: "4.3 (20)" },
+        { id: "product6", img: "assets/images/products/Product6.jpg", title: "Soft Blue Long Dress", price: "379", old: "529", rating: "4.7 (11)" },
+        { id: "product7", img: "assets/images/products/Product7.jpg", title: "Sabrina Embroidered Luxury Dress", price: "569", old: "699", rating: "4.9 (9)" },
+        { id: "product8", img: "assets/images/products/Product8.jpg", title: "Textured Maxi Dress With Elegant Fit", price: "559", old: "699", rating: "4.1 (25)" },
+        { id: "product9", img: "assets/images/products/Product9.jpg", title: "Lilly Deep V-Neck Premium Dress", price: "569", old: "699", rating: "4.5 (12)" },
+        { id: "product10", img: "assets/images/products/Product10.jpg", title: "Alessia Floral Print Maxi Dress", price: "711", old: "849", rating: "4.4 (13)" },
+        { id: "product11", img: "assets/images/products/Product11.jpg", title: "Pink Occasion Wear Dress", price: "489", old: "649", rating: "4.6 (17)" },
+        { id: "product12", img: "assets/images/products/Product12.jpg", title: "Minimal Everyday Dress", price: "329", old: "449", rating: "4.2 (14)" }
+      ];
+
+      const productGrid = document.querySelector("#productGrid");
+
+      productGrid.innerHTML = products.map((product) => `
+        <article class="product-card">
+          <a class="product-card-link" href="product.html?id=${product.id}" aria-label="View ${product.title}">
+            <div class="img-wrapper">
+              <span class="badge-premium">PREMIUM</span>
+              <img data-img="${product.img}" alt="${product.title}" loading="lazy">
+              <div class="badge-bottom">20% Back* | EID SPECIAL</div>
+            </div>
+            <div class="card-details">
+              <h3 class="product-title">${product.title}</h3>
+              <div class="rating-row">
+                <span class="material-symbols-outlined rating-star">star</span>
+                ${product.rating}
+              </div>
+              <div class="price-row">
+                <span class="currency">INR</span>
+                <span class="current-price">${product.price}</span>
+                <span class="old-price">${product.old}</span>
+                <span class="discount-tag">20% OFF</span>
+              </div>
+              <div class="offer-row">
+                <span class="offer-badge">Extra 20% off</span>
+                <span class="offer-badge">+2</span>
+              </div>
+              <span class="express">express</span>
+              <div class="delivery-info">Free delivery</div>
+            </div>
+          </a>
+          <button class="heart-btn" type="button" aria-label="Add to wishlist">
+            <span class="material-symbols-outlined">favorite</span>
+          </button>
+        </article>
+      `).join("");
+
+      document.querySelectorAll("img[data-img]").forEach((img) => {
+        loadImage(img, img.dataset.img);
+      });
+
+      const categoryScroll = document.querySelector("#categoryScroll");
+      const catPrev = document.querySelector(".cat-prev");
+      const catNext = document.querySelector(".cat-next");
+
+      if (categoryScroll && catPrev && catNext) {
+        catPrev.addEventListener("click", () => {
+          categoryScroll.scrollBy({ left: -340, behavior: "smooth" });
+        });
+
+        catNext.addEventListener("click", () => {
+          categoryScroll.scrollBy({ left: 340, behavior: "smooth" });
+        });
+      }
+
+      const slider = document.querySelector("#heroSlider");
+      const slides = [...slider.querySelectorAll(".hero-slide")];
+      const dots = [...slider.querySelectorAll(".dot")];
+      const prev = slider.querySelector(".prev");
+      const next = slider.querySelector(".next");
+      let activeIndex = 0;
+      let timer;
+      let arrowTimer;
+
+      function revealHeroArrows(temporary = false) {
+        slider.classList.add("is-arrow-visible");
+        window.clearTimeout(arrowTimer);
+
+        if (temporary) {
+          arrowTimer = window.setTimeout(() => {
+            slider.classList.remove("is-arrow-visible");
+          }, 2600);
+        }
+      }
+
+      function hideHeroArrows() {
+        window.clearTimeout(arrowTimer);
+        slider.classList.remove("is-arrow-visible");
+      }
+
+      function showSlide(index) {
+        slides[activeIndex].classList.remove("is-active");
+        dots[activeIndex]?.classList.remove("is-active");
+
+        activeIndex = (index + slides.length) % slides.length;
+
+        slides[activeIndex].classList.add("is-active");
+        dots[activeIndex]?.classList.add("is-active");
+      }
+
+      function startAutoSlide() {
+        timer = window.setInterval(() => showSlide(activeIndex + 1), 4000);
+      }
+
+      function restartAutoSlide() {
+        window.clearInterval(timer);
+        startAutoSlide();
+      }
+
+      prev.addEventListener("click", () => {
+        revealHeroArrows(window.innerWidth <= 1024);
+        showSlide(activeIndex - 1);
+        restartAutoSlide();
+      });
+
+      next.addEventListener("click", () => {
+        revealHeroArrows(window.innerWidth <= 1024);
+        showSlide(activeIndex + 1);
+        restartAutoSlide();
+      });
+
+      dots.forEach((dot, index) => {
+        dot.addEventListener("click", () => {
+          revealHeroArrows(window.innerWidth <= 1024);
+          showSlide(index);
+          restartAutoSlide();
+        });
+      });
+
+      slider.addEventListener("pointerenter", () => {
+        revealHeroArrows(false);
+      });
+
+      slider.addEventListener("pointerleave", () => {
+        hideHeroArrows();
+      });
+
+      slider.addEventListener("pointerdown", (event) => {
+        if (event.target.closest(".slider-btn")) return;
+        revealHeroArrows(true);
+      });
+
+      slider.addEventListener("focusin", () => {
+        revealHeroArrows(false);
+      });
+
+      slider.addEventListener("focusout", () => {
+        hideHeroArrows();
+      });
+
+      startAutoSlide();
+
+      let scrollTimer;
+      const backToTop = document.querySelector(".back-to-top");
+
+      function updateBackToTop() {
+        backToTop?.classList.toggle("is-visible", window.scrollY > 260);
+      }
+
+      window.addEventListener("scroll", () => {
+        updateBackToTop();
+
+        if (window.innerWidth > 768) return;
+
+        document.body.classList.add("nav-hidden");
+
+        window.clearTimeout(scrollTimer);
+        scrollTimer = window.setTimeout(() => {
+          document.body.classList.remove("nav-hidden");
+        }, 220);
+      }, { passive: true });
+
+      backToTop?.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      updateBackToTop();
+
+      const whatsappWidget = document.querySelector("#whatsappWidget");
+      const whatsappClose = document.querySelector(".whatsapp-close");
+
+      whatsappClose?.addEventListener("click", () => {
+        whatsappWidget?.classList.add("is-hidden");
+      });
+    });
+  </script>
+</body>
+</html>

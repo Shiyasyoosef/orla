@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magento 2 Enterprise Admin Panel</title>
+  <!-- Google Fonts, Lucide Icons & Chart.js CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/admin/css/style.css?v=20260830_fix1">
+  <link rel="stylesheet" href="/admin/style.css?v=20260830_fix1">
+</head>
+<body>
+
+  <div id="app">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar" id="mainSidebar">
+      <div class="sidebar-brand" onclick="navigateTo('#/dashboard')">
+        <div class="logo-icon">M</div>
+        <span>MAGENTO 2</span>
+      </div>
+      <nav class="sidebar-nav" id="sidebarNav"></nav>
+    </aside>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOP HEADER -->
+      <header class="header">
+        <div class="header-left">
+          <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
+            <i data-lucide="menu"></i>
+          </button>
+          <div>
+            <div class="header-title-badge">ADMIN PANEL</div>
+            <div class="header-page-title" id="pageHeaderTitle">Dashboard</div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Global Search -->
+          <div class="global-search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="globalSearchInput" placeholder="Search orders, products, customers..." oninput="handleGlobalSearch(this.value)">
+            <div class="search-suggestions" id="searchSuggestions"></div>
+          </div>
+
+          <!-- Store Selector -->
+          <select class="store-select" onchange="showToast('Switched to ' + this.value)">
+            <option value="UAE Store View">UAE Store View (AED)</option>
+            <option value="KSA Store View">KSA Store View (SAR)</option>
+            <option value="Global Store View">Global (USD)</option>
+          </select>
+
+          <!-- Notifications -->
+          <div class="header-btn-icon" onclick="toggleNotificationsDrawer()" title="Notifications">
+            <i data-lucide="bell"></i>
+            <span class="badge-dot"></span>
+          </div>
+
+          <!-- Quick Cache Flush -->
+          <div class="header-btn-icon" onclick="flushCacheFast()" title="Flush Magento Cache">
+            <i data-lucide="rotate-cw"></i>
+          </div>
+
+          <!-- User Profile -->
+          <div class="user-pill" onclick="navigateTo('#/system/admin-profile')">
+            <div class="user-avatar">A</div>
+            <span style="font-weight:600; font-size:12px;">Admin User</span>
+          </div>
+
+          <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
+      </header>
+
+      <!-- MAIN CONTENT VIEWPORT -->
+      <main class="content-area" id="mainContent"></main>
+    </div>
+  </div>
+
+  <!-- GENERIC MODAL -->
+  <div class="modal-overlay" id="appModalOverlay" onclick="closeModal(event)">
+    <div class="modal" id="appModal">
+      <div class="modal-header">
+        <span id="modalTitle">Modal Dialog</span>
+        <i data-lucide="x" style="cursor:pointer; width:18px;" onclick="closeModalDirect()"></i>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <!-- GENERIC RIGHT DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="sideDrawer">
+    <div class="drawer-header">
+      <span id="drawerTitle">Drawer Details</span>
+      <i data-lucide="x" style="cursor:pointer; width:18px;" onclick="closeDrawer()"></i>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/admin/js/app.js?v=20260830_fix1"></script>
+  <script src="/admin/app.js?v=20260830_fix1"></script>
+</body>
+</html>

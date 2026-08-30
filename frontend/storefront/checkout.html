@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout Delivery | OrlaTrends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body>
+  <div class="customer-app">
+    <header class="customer-topbar">
+      <a class="brand-word" href="index.html">OrlaTrends</a>
+      <nav class="nav-actions" aria-label="Checkout navigation">
+        <a class="ghost-btn" href="account.html">My Address Book</a>
+        <a class="ghost-btn" href="index.html">Storefront</a>
+        <button class="secondary-btn" type="button" id="logoutBtn">Logout</button>
+      </nav>
+    </header>
+
+    <main class="page-wrap">
+      <p class="page-kicker">Checkout</p>
+      <h1 class="page-title">Delivery address</h1>
+      <p class="page-subtitle">Signed in as <strong id="checkoutCustomerName">Customer</strong>. Select a saved address or add a new one for this order.</p>
+
+      <section class="checkout-layout">
+        <div class="checkout-card">
+          <h2>Saved addresses</h2>
+          <div id="addressOptions" class="address-options" aria-live="polite">
+            <div class="empty-state">Loading saved addresses...</div>
+          </div>
+
+          <hr style="border:0;border-top:1px solid var(--line);margin:26px 0;">
+          <h2>Add delivery address</h2>
+          <form id="checkoutAddressForm" class="form-grid light-form" novalidate>
+            <div id="checkoutAddressError" class="error-box"></div>
+            <div id="checkoutAddressSuccess" class="success-box"></div>
+            <div class="form-grid two-col">
+              <div class="field">
+                <label for="addressType">Address type</label>
+                <select id="addressType" name="addressType">
+                  <option>Home</option>
+                  <option>Office</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="fullName">Receiver full name</label>
+                <input id="fullName" name="fullName" required autocomplete="name">
+              </div>
+            </div>
+            <div class="form-grid two-col">
+              <div class="field">
+                <label for="phoneNumber">Phone number</label>
+                <input id="phoneNumber" name="phoneNumber" required autocomplete="tel" placeholder="+971 50 000 0000">
+              </div>
+              <div class="field">
+                <label for="country">Country</label>
+                <input id="country" name="country" required value="United Arab Emirates" autocomplete="country-name">
+              </div>
+            </div>
+            <div class="field">
+              <label for="streetAddress">Flat/Villa, Building, Street</label>
+              <textarea id="streetAddress" name="streetAddress" required autocomplete="street-address"></textarea>
+            </div>
+            <div class="form-grid two-col">
+              <div class="field">
+                <label for="city">City / Area</label>
+                <input id="city" name="city" required autocomplete="address-level2">
+              </div>
+              <div class="field">
+                <label for="area">Area details</label>
+                <input id="area" name="area" autocomplete="address-line2">
+              </div>
+            </div>
+            <div class="form-grid two-col">
+              <div class="field">
+                <label for="emirate">State / Emirate</label>
+                <input id="emirate" name="emirate" autocomplete="address-level1">
+              </div>
+              <div class="field">
+                <label for="pincode">Pincode / ZIP code</label>
+                <input id="pincode" name="pincode" autocomplete="postal-code">
+              </div>
+            </div>
+            <label class="checkbox-row"><input type="checkbox" name="saveAddress" checked> Save this address to my profile for future orders</label>
+            <label class="checkbox-row"><input type="checkbox" name="isDefaultShipping"> Set as default shipping address</label>
+            <label class="checkbox-row"><input type="checkbox" name="isDefaultBilling"> Set as default billing address</label>
+            <button class="secondary-btn" type="submit">Use this address</button>
+          </form>
+        </div>
+
+        <aside class="panel-card">
+          <h2>Order summary</h2>
+          <div class="order-line"><span>Items</span><strong>AED 519.90</strong></div>
+          <div class="order-line"><span>Delivery</span><strong>Free</strong></div>
+          <div class="order-line"><span>VAT</span><strong>AED 24.75</strong></div>
+          <div class="order-line"><span>Total</span><strong>AED 544.65</strong></div>
+          <a class="secondary-btn" href="payment.html" style="display:block;text-align:center;width:100%;margin-top:18px;">Continue to payment</a>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/customer-auth.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>

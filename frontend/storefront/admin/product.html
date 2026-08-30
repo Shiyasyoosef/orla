@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OrlaTrends Product</title>
+  <meta name="description" content="Premium OrlaTrends fashion product with variant-specific URL support." />
+  <link id="canonicalLink" rel="canonical" href="/product.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script type="application/ld+json" id="productSchema">{}</script>
+  <script src="variant-deeplink.js?v=20260610variants" defer></script>
+  <style>
+    :root{--text:#16191d;--muted:#5f6368;--line:#e5e7eb;--soft:#f8f9fa;--black:#050505;--white:#fff}
+    *{box-sizing:border-box}body{margin:0;font-family:"Google Sans","Product Sans","Inter","Roboto",Arial,sans-serif;background:#fff;color:var(--text);-webkit-font-smoothing:antialiased}.product-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:28px 0 60px}.back-link{display:inline-flex;margin-bottom:22px;color:#111;text-decoration:none;font-weight:800;letter-spacing:-.03em}.product-card{display:grid;grid-template-columns:minmax(0,.95fr) minmax(340px,.75fr);gap:38px;align-items:start}.gallery{position:sticky;top:24px;border:1px solid var(--line);border-radius:28px;background:linear-gradient(180deg,#fafafa,#f2f2f2);padding:24px;min-height:620px;display:grid;place-items:center;box-shadow:0 24px 70px rgba(60,64,67,.10)}.gallery img{width:100%;height:min(72vh,560px);object-fit:contain}.stock-badge{position:absolute;left:28px;top:28px;border:1px solid #d7d7d7;background:#fff;color:#111;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:800}.stock-badge.is-out{background:#111;color:#fff;border-color:#111}.details{padding:28px 0}.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--muted)}h1{font-size:clamp(38px,6vw,72px);line-height:.96;letter-spacing:-.075em;margin:12px 0 18px;font-weight:850}.description{font-size:17px;line-height:1.7;color:var(--muted);max-width:560px}.price-line{display:flex;align-items:flex-end;gap:10px;margin:28px 0 8px}.price-line span{font-weight:800;color:var(--muted)}.price-line strong{font-size:40px;letter-spacing:-.06em}.price-line del{color:#8b8b8b;margin-bottom:8px}.sku-line{color:var(--muted);font-size:14px}.variant-options{display:grid;gap:22px;margin:30px 0}.option-group{display:grid;gap:10px}.option-label{font-size:13px;text-transform:uppercase;letter-spacing:.13em;font-weight:850;color:#3c4043}.option-values{display:flex;flex-wrap:wrap;gap:10px}.variant-option{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid #d7d7d7;background:#fff;color:#111;font-weight:800;transition:.2s ease}.variant-option:hover,.variant-option.is-active{border-color:#111;background:#111;color:#fff}.variant-option.is-disabled{opacity:.42;text-decoration:line-through}.cart-button{width:100%;height:56px;border:0;border-radius:999px;background:#111;color:#fff;font-size:16px;font-weight:850;letter-spacing:-.02em;cursor:pointer}.cart-button:disabled{opacity:.45;cursor:not-allowed}.merchant-note{border:1px solid var(--line);border-radius:18px;background:var(--soft);padding:14px 16px;color:var(--muted);font-size:13px;line-height:1.55}@media(max-width:820px){.product-shell{width:min(100% - 22px,680px);padding-top:16px}.product-card{grid-template-columns:1fr;gap:16px}.gallery{position:relative;top:auto;min-height:420px;border-radius:22px}.details{padding:8px 2px}h1{font-size:42px}.price-line strong{font-size:32px}}
+  </style>
+</head>
+<body>
+  <main class="product-shell" data-product-page>
+    <a class="back-link" href="index.html">OrlaTrends</a>
+    <section class="product-card">
+      <div class="gallery">
+        <img id="productImage" src="/assets/images/products/Product1.jpg" alt="OrlaTrends product" />
+        <span id="stockBadge" class="stock-badge">Loading</span>
+      </div>
+      <div class="details">
+        <p class="eyebrow">Premium Fashion</p>
+        <h1 id="productTitle">Loading product</h1>
+        <p id="productDescription" class="description">Preparing selected variant.</p>
+        <div class="price-line"><span>AED</span><strong id="productPrice">0.00</strong><del id="comparePrice"></del></div>
+        <p class="sku-line">SKU: <strong id="variantSku">Loading</strong></p>
+        <div id="variantOptions" class="variant-options"></div>
+        <button id="addToCartButton" class="cart-button" type="button">Add selected variant to cart</button>
+        <p class="merchant-note">Variant URL, visible price, stock status and JSON-LD schema are synchronized for Google Merchant Center.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+

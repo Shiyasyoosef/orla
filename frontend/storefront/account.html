@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Address Book | OrlaTrends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body>
+  <div class="customer-app">
+    <header class="customer-topbar">
+      <a class="brand-word" href="index.html">OrlaTrends</a>
+      <nav class="nav-actions" aria-label="Account navigation">
+        <a class="ghost-btn" href="index.html">Storefront</a>
+        <a class="ghost-btn" href="checkout.html">Checkout</a>
+        <button class="secondary-btn" type="button" id="logoutBtn">Logout</button>
+      </nav>
+    </header>
+
+    <main class="page-wrap">
+      <p class="page-kicker">My Account</p>
+      <h1 class="page-title">Address Book</h1>
+      <p class="page-subtitle">Welcome, <strong id="customerName">Customer</strong>. Manage home, office and other delivery addresses without adding address friction during signup.</p>
+
+      <div class="toolbar">
+        <div>
+          <strong>Saved addresses</strong>
+          <p class="page-subtitle" style="margin:4px 0 0;">Default shipping address is highlighted.</p>
+        </div>
+        <button class="secondary-btn" type="button" id="addAddressBtn">Add New Address</button>
+      </div>
+
+      <section id="addressGrid" class="address-grid" aria-live="polite">
+        <div class="empty-state">Loading addresses...</div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="addressModal" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="addressModalTitle">
+      <div class="modal-head">
+        <h2 id="addressModalTitle">Add new address</h2>
+        <button class="icon-btn" type="button" data-close-modal aria-label="Close">X</button>
+      </div>
+      <form id="addressForm" class="form-grid light-form" novalidate>
+        <div id="addressError" class="error-box"></div>
+        <div class="form-grid two-col">
+          <div class="field">
+            <label for="addressType">Address type</label>
+            <select id="addressType" name="addressType">
+              <option>Home</option>
+              <option>Office</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fullName">Receiver full name</label>
+            <input id="fullName" name="fullName" required autocomplete="name">
+          </div>
+        </div>
+        <div class="form-grid two-col">
+          <div class="field">
+            <label for="phoneNumber">Phone number</label>
+            <input id="phoneNumber" name="phoneNumber" required autocomplete="tel" placeholder="+971 50 000 0000">
+          </div>
+          <div class="field">
+            <label for="country">Country</label>
+            <input id="country" name="country" required value="United Arab Emirates" autocomplete="country-name">
+          </div>
+        </div>
+        <div class="field">
+          <label for="streetAddress">Flat/Villa, Building, Street</label>
+          <textarea id="streetAddress" name="streetAddress" required autocomplete="street-address"></textarea>
+        </div>
+        <div class="form-grid two-col">
+          <div class="field">
+            <label for="city">City / Area</label>
+            <input id="city" name="city" required autocomplete="address-level2">
+          </div>
+          <div class="field">
+            <label for="area">Area details</label>
+            <input id="area" name="area" autocomplete="address-line2">
+          </div>
+        </div>
+        <div class="form-grid two-col">
+          <div class="field">
+            <label for="emirate">State / Emirate</label>
+            <input id="emirate" name="emirate" autocomplete="address-level1">
+          </div>
+          <div class="field">
+            <label for="pincode">Pincode / ZIP code</label>
+            <input id="pincode" name="pincode" autocomplete="postal-code">
+          </div>
+        </div>
+        <label class="checkbox-row"><input type="checkbox" name="isDefaultShipping"> Set as default shipping address</label>
+        <label class="checkbox-row"><input type="checkbox" name="isDefaultBilling"> Set as default billing address</label>
+        <button class="secondary-btn" type="submit">Save address</button>
+      </form>
+    </section>
+  </div>
+
+  <script src="js/customer-auth.js"></script>
+  <script src="js/customer-addresses.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+ORLATRENDS COPY / BACKUP GUIDE
+
+Best full backup path to copy to pendrive:
+C:\orlatrends
+
+This includes:
+- Customer storefront files
+- Organized assets/images folders
+- Main admin software: orlatrends-admin
+- Database schema and setup guide
+- cPanel/Netlify deployment files
+- Archive backup folder
+
+If you only need admin source code:
+C:\orlatrends\orlatrends-admin
+
+Important:
+If you copy only orlatrends-admin, product images may not show because shared images are stored here:
+C:\orlatrends\assets\images
+
+Recommended live update upload structure:
+- Upload index.html, product.html, variant-deeplink.js
+- Upload assets/ folder exactly as-is
+- Upload robots.txt, _headers, _redirects, .htaccess if your host uses them
+- Keep orlatrends-admin for backend/admin deployment or local development
+
+Do not upload _archive unless you specifically want backups on hosting.
+
+New customer account files included:
+- customer-login.html
+- register.html
+- account.html
+- checkout.html
+- customer.css
+- customer-auth.js
+- customer-addresses.js
+- checkout.js
+
+Geo-switcher files included:
+- orlatrends-admin\backend\config\geoSwitcher.js
+- orlatrends-admin\backend\server.js
+- GEO_SWITCHER_TEST_REPORT.md

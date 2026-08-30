@@ -1,0 +1,34 @@
+User-agent: *
+Allow: /
+Allow: /sc
+Allow: /sc/
+Allow: /za
+Allow: /za/
+Allow: /ae
+Allow: /ae/
+Allow: /sa
+Allow: /sa/
+Allow: /kw
+Allow: /kw/
+Allow: /qa
+Allow: /qa/
+Allow: /om
+Allow: /om/
+Allow: /bh
+Allow: /bh/
+Allow: /*?variant=
+Allow: /*?color=
+Allow: /*?size=
+Allow: /*?shoe-size=
+Allow: /*?ram=
+Allow: /*?storage=
+Allow: /*?fabric=
+Allow: /*?material=
+Allow: /*?style=
+Allow: /*?pattern=
+Allow: /*?fit=
+
+User-agent: Googlebot-Image
+Allow: /
+
+Sitemap: https://orlatrendsin.netlify.app/sitemap.xml

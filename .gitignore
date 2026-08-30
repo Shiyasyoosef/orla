@@ -1,0 +1,18 @@
+# Sensitive environment configuration
+.env
+.env.*
+!.env.example
+
+# Generated dependencies
+node_modules/
+**/node_modules/
+
+# Runtime files and customer uploads
+*.log
+orlatrends-admin/backend/logs/*.log
+orlatrends-admin/backend/uploads/*
+!orlatrends-admin/backend/uploads/.gitkeep
+
+# Operating-system files
+.DS_Store
+Thumbs.db
