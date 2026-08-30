@@ -1,6 +1,6 @@
 /**
- * Magento 2 Enterprise Admin Panel SPA
- * Complete JavaScript logic matching the exact Magento 2 design layout with live API integration.
+ * OrlaTrends Enterprise Admin Panel SPA
+ * Complete JavaScript logic matching the exact OrlaTrends design layout with live API integration.
  */
 
 /* ==========================================================
@@ -73,9 +73,9 @@ const DB = {
   ],
   adminUsers: [
     { id: 1, username: 'admin', name: 'Admin User', email: 'admin@orlatrends.com', role: 'Super Administrators', status: 'Active', lastLogin: '2026-08-30 14:10' },
-    { id: 2, username: 'catalog_manager', name: 'Omar Farooq', email: 'omar.f@magento-uae.ae', role: 'Catalog Editors', status: 'Active', lastLogin: '2026-08-29 11:30' },
-    { id: 3, username: 'sales_ops', name: 'Leila Hassan', email: 'leila.h@magento-uae.ae', role: 'Order Processors', status: 'Active', lastLogin: '2026-08-30 09:15' },
-    { id: 4, username: 'marketing_lead', name: 'David Miller', email: 'david.m@magento-uae.ae', role: 'Marketing Team', status: 'Inactive', lastLogin: '2026-08-12 16:45' }
+    { id: 2, username: 'catalog_manager', name: 'Omar Farooq', email: 'omar.f@orlatrends.com', role: 'Catalog Editors', status: 'Active', lastLogin: '2026-08-29 11:30' },
+    { id: 3, username: 'sales_ops', name: 'Leila Hassan', email: 'leila.h@orlatrends.com', role: 'Order Processors', status: 'Active', lastLogin: '2026-08-30 09:15' },
+    { id: 4, username: 'marketing_lead', name: 'David Miller', email: 'david.m@orlatrends.com', role: 'Marketing Team', status: 'Inactive', lastLogin: '2026-08-12 16:45' }
   ],
   cacheItems: [
     { id: 'config', name: 'Configuration', desc: 'System configuration settings and XML cache', status: 'Enabled', tags: 'CONFIG' },
@@ -1519,7 +1519,7 @@ function renderConfigurationView() {
         <div class="form-grid">
           <div class="form-group full-width">
             <label class="form-label">Store Name <span class="required">*</span></label>
-            <input type="text" class="form-control" value="Magento UAE Flagship Store">
+            <input type="text" class="form-control" value="OrlaTrends UAE Flagship Store">
           </div>
           <div class="form-group">
             <label class="form-label">Store Contact Telephone</label>
@@ -1562,7 +1562,7 @@ function renderCacheView() {
         <h2 style="font-size:18px; font-weight:700;">Cache Management</h2>
       </div>
       <div style="display:flex; gap:8px;">
-        <button class="btn btn-danger" onclick="flushCacheFast()"><i data-lucide="trash-2"></i> Flush Magento Cache</button>
+        <button class="btn btn-danger" onclick="flushCacheFast()"><i data-lucide="trash-2"></i> Flush Orla Cache</button>
         <button class="btn btn-primary" onclick="showToast('All Cache Storage Refreshed')"><i data-lucide="refresh-cw"></i> Refresh All</button>
       </div>
     </div>
@@ -1756,7 +1756,7 @@ function showToast(message) {
 }
 
 function flushCacheFast() {
-  showToast('Flushed Magento Cache Storage Successfully.');
+  showToast('Flushed Orla Cache Storage Successfully.');
 }
 
 function handleLogout() {
