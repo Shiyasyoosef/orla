@@ -1,9 +1,0 @@
-﻿const { pool } = require("../config/database");
-const Brand = {
-  async list({ search="", status="", page=1, limit=100 }={}) { const where=[]; const p=[]; if(search){where.push("(b.name LIKE ? OR b.slug LIKE ?)");p.push(`%${search}%`,`%${search}%`)} if(status){where.push("b.status=?");p.push(status)} const ws=where.length?`WHERE ${where.join(" AND ")}`:""; const l=Math.min(Number(limit)||100,100), o=((Number(page)||1)-1)*l; const [rows]=await pool.execute(`SELECT b.*, COUNT(p.id) product_count FROM catalog_brands b LEFT JOIN catalog_products p ON p.brand_id=b.id ${ws} GROUP BY b.id ORDER BY b.name LIMIT ? OFFSET ?`,[...p,l,o]); const [cr]=await pool.execute(`SELECT COUNT(*) total FROM catalog_brands b ${ws}`,p); return { rows, pagination:{page:Number(page)||1,limit:l,total:cr[0]?.total||0} }; },
-  async findById(id){const [r]=await pool.execute("SELECT * FROM catalog_brands WHERE id=?",[id]); return r[0]||null;},
-  async findBySlug(slug){const [r]=await pool.execute("SELECT * FROM catalog_brands WHERE slug=?",[slug]); return r[0]||null;},
-  async create(d,adminId){const [r]=await pool.execute("INSERT INTO catalog_brands(name,slug,description,logo_url,website_url,seo_title,seo_description,status,created_by) VALUES(?,?,?,?,?,?,?,?,?)",[d.name,d.slug,d.description||null,d.logoUrl||null,d.websiteUrl||null,d.seoTitle||null,d.seoDescription||null,d.status||"active",adminId||null]); return this.findById(r.insertId);},
-  async update(id,d){await pool.execute("UPDATE catalog_brands SET name=?,slug=?,description=?,logo_url=?,website_url=?,seo_title=?,seo_description=?,status=? WHERE id=?",[d.name,d.slug,d.description||null,d.logoUrl||null,d.websiteUrl||null,d.seoTitle||null,d.seoDescription||null,d.status||"active",id]); return this.findById(id);},
-  async delete(id){const [r]=await pool.execute("DELETE FROM catalog_brands WHERE id=?",[id]); return r.affectedRows>0;}
-}; module.exports=Brand;
