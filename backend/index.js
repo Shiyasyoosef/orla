@@ -152,6 +152,159 @@ function requirePermission(permission) {
   };
 }
 
+
+function normalizeEmail(email) {
+  return String(email || "").toLowerCase().trim();
+}
+
+function customerResponse(customerDoc) {
+  const firstName = customerDoc.first_name || customerDoc.firstName || "";
+  const lastName = customerDoc.last_name || customerDoc.lastName || "";
+  const fullName = customerDoc.full_name || customerDoc.fullName || [firstName, lastName].filter(Boolean).join(" ");
+  return {
+    id: customerDoc.id,
+    firstName,
+    lastName,
+    fullName,
+    email: customerDoc.email,
+    phoneNumber: customerDoc.phone_number || customerDoc.phoneNumber || "",
+    status: customerDoc.status || "active"
+  };
+}
+
+async function findCustomerByEmail(email) {
+  const normEmail = normalizeEmail(email);
+  if (!normEmail) return null;
+  try {
+    const snap = await db.collection("customer_accounts").where("email", "==", normEmail).limit(1).get();
+    if (!snap.empty) {
+      const doc = snap.docs[0];
+      return { id: doc.id, ...doc.data() };
+    }
+  } catch (err) {
+    console.warn("Firestore findCustomerByEmail error:", err.message);
+  }
+  return null;
+}
+
+async function findCustomerById(id) {
+  if (!id) return null;
+  try {
+    const doc = await db.collection("customer_accounts").doc(id).get();
+    if (doc.exists) return { id: doc.id, ...doc.data() };
+  } catch (err) {
+    console.warn("Firestore findCustomerById error:", err.message);
+  }
+  return null;
+}
+
+function signCustomerAccess(customerDoc) {
+  return jwt.sign({ sub: customerDoc.id, email: customerDoc.email, type: "customer" }, JWT_SECRET, { expiresIn: "30m" });
+}
+
+function setCustomerRefreshCookie(res, refreshToken, rememberMe) {
+  res.cookie("orla_customer_refresh", refreshToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: (rememberMe ? 30 : 7) * 86400000
+  });
+}
+
+function setCsrfCookie(req, res) {
+  const existing = req.cookies?.orla_csrf;
+  const csrfToken = existing || crypto.randomBytes(24).toString("hex");
+  res.cookie("orla_csrf", csrfToken, {
+    httpOnly: false,
+    sameSite: "lax",
+    maxAge: 7 * 86400000
+  });
+  return csrfToken;
+}
+
+async function issueCustomerRefresh(customerDoc, req, rememberMe, oldHash = null) {
+  try {
+    if (oldHash) {
+      const snaps = await db.collection("customer_sessions").where("refresh_token_hash", "==", oldHash).get();
+      snaps.forEach(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() }));
+    }
+  } catch (_) {}
+
+  const refreshToken = jwt.sign(
+    { sub: customerDoc.id, type: "customer_refresh", nonce: crypto.randomBytes(12).toString("hex") },
+    REFRESH_SECRET,
+    { expiresIn: rememberMe ? "30d" : "7d" }
+  );
+  const expires = new Date();
+  expires.setDate(expires.getDate() + (rememberMe ? 30 : 7));
+
+  try {
+    await db.collection("customer_sessions").add({
+      customer_id: customerDoc.id,
+      refresh_token_hash: hashToken(refreshToken),
+      user_agent: req.headers["user-agent"] || "Browser",
+      ip_address: req.ip,
+      expires_at: admin.firestore.Timestamp.fromDate(expires),
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
+      revoked_at: null
+    });
+  } catch (_) {}
+
+  return refreshToken;
+}
+
+async function customerAuthRequired(req, res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!token) return fail(res, 401, "Customer login required");
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.type !== "customer") return fail(res, 401, "Invalid customer session");
+    const customerDoc = await findCustomerById(decoded.sub);
+    if (!customerDoc || customerDoc.status === "inactive") return fail(res, 401, "Customer account is not active");
+    req.customer = customerDoc;
+    next();
+  } catch (_) {
+    return fail(res, 401, "Session expired. Please login again.");
+  }
+}
+
+async function getValidCustomerRefresh(req) {
+  const refreshToken = req.cookies?.orla_customer_refresh || req.body?.refreshToken || "";
+  if (!refreshToken) return null;
+
+  try {
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+    if (decoded.type !== "customer_refresh") return null;
+
+    const tokenHash = hashToken(refreshToken);
+    const snap = await db.collection("customer_sessions").where("refresh_token_hash", "==", tokenHash).limit(1).get();
+    if (snap.empty) return null;
+
+    const sessionDoc = snap.docs[0];
+    const session = sessionDoc.data();
+    const expiresAt = session.expires_at?.toDate ? session.expires_at.toDate() : new Date(session.expires_at);
+    if (session.revoked_at || (expiresAt && expiresAt <= new Date())) return null;
+
+    const customerDoc = await findCustomerById(decoded.sub);
+    if (!customerDoc || customerDoc.status === "inactive") return null;
+
+    return { customerDoc, oldHash: tokenHash };
+  } catch (_) {
+    return null;
+  }
+}
+
+async function clearDefaultAddress(customerId, fieldName, exceptId = null) {
+  const snap = await db.collection("customer_accounts").doc(customerId).collection("addresses").where(fieldName, "==", true).get();
+  if (snap.empty) return;
+  const batch = db.batch();
+  snap.docs.forEach(doc => {
+    if (!exceptId || doc.id !== exceptId) batch.update(doc.ref, { [fieldName]: false, updated_at: admin.firestore.FieldValue.serverTimestamp() });
+  });
+  await batch.commit();
+}
+
 // System Health
 app.get("/health", (req, res) => {
   ok(res, { status: "healthy", app: "OrlaTrends Admin Firebase" });
@@ -185,6 +338,204 @@ app.get("/api/auth/me", authRequired, asyncHandler(async (req, res) => {
 app.post("/api/auth/logout", authRequired, asyncHandler(async (req, res) => {
   await logActivity(req.admin.id, "Logged out", "Auth");
   ok(res, {}, "Logged out");
+}));
+
+
+// Customer CSRF Route
+app.get("/api/security/csrf", (req, res) => {
+  const csrfToken = setCsrfCookie(req, res);
+  ok(res, { csrfToken }, "CSRF token ready");
+});
+
+// Customer Authentication Routes
+app.post("/api/v1/customer/auth/register", asyncHandler(async (req, res) => {
+  const firstName = String(req.body.firstName || "").trim();
+  const lastName = String(req.body.lastName || "").trim();
+  const email = normalizeEmail(req.body.email);
+  const password = String(req.body.password || "");
+  const phoneNumber = String(req.body.phoneNumber || "").trim();
+
+  if (!firstName || !lastName || !email || !password) return fail(res, 422, "First name, last name, email and password are required");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(res, 422, "Enter a valid email address");
+  if (password.length < 8 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+    return fail(res, 422, "Password must be at least 8 characters and include uppercase, lowercase and a number");
+  }
+
+  const existing = await findCustomerByEmail(email);
+  if (existing) return fail(res, 409, "An account already exists with this email");
+
+  const fullName = [firstName, lastName].join(" ");
+  const passwordHash = await bcrypt.hash(password, 10);
+  const customerData = {
+    first_name: firstName,
+    last_name: lastName,
+    full_name: fullName,
+    email,
+    phone_number: phoneNumber,
+    password_hash: passwordHash,
+    status: "active",
+    created_at: admin.firestore.FieldValue.serverTimestamp(),
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  };
+
+  const ref = await db.collection("customer_accounts").add(customerData);
+  await db.collection("customers").doc(ref.id).set({
+    first_name: firstName,
+    last_name: lastName,
+    full_name: fullName,
+    email,
+    phone_number: phoneNumber,
+    status: "active",
+    created_at: admin.firestore.FieldValue.serverTimestamp(),
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  const customerDoc = { id: ref.id, ...customerData };
+  const accessToken = signCustomerAccess(customerDoc);
+  const refreshToken = await issueCustomerRefresh(customerDoc, req, true);
+  setCustomerRefreshCookie(res, refreshToken, true);
+  const csrfToken = setCsrfCookie(req, res);
+
+  ok(res, { accessToken, refreshToken, csrfToken, customer: customerResponse(customerDoc) }, "Account created");
+}));
+
+app.post("/api/v1/customer/auth/login", asyncHandler(async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  const password = String(req.body.password || "");
+  const rememberMe = Boolean(req.body.rememberMe);
+
+  if (!email || !password) return fail(res, 422, "Email and password are required");
+
+  const customerDoc = await findCustomerByEmail(email);
+  if (!customerDoc) return fail(res, 401, "Invalid email or password");
+
+  const valid = await bcrypt.compare(password, customerDoc.password_hash || "");
+  if (!valid) return fail(res, 401, "Invalid email or password");
+  if (customerDoc.status === "inactive") return fail(res, 403, "Customer account is not active");
+
+  const accessToken = signCustomerAccess(customerDoc);
+  const refreshToken = await issueCustomerRefresh(customerDoc, req, rememberMe);
+  setCustomerRefreshCookie(res, refreshToken, rememberMe);
+  const csrfToken = setCsrfCookie(req, res);
+
+  ok(res, { accessToken, refreshToken, csrfToken, customer: customerResponse(customerDoc) }, "Login successful");
+}));
+
+app.post("/api/v1/customer/auth/refresh", asyncHandler(async (req, res) => {
+  const session = await getValidCustomerRefresh(req);
+  if (!session) return fail(res, 401, "Customer session expired. Please login again.");
+
+  const accessToken = signCustomerAccess(session.customerDoc);
+  const refreshToken = await issueCustomerRefresh(session.customerDoc, req, true, session.oldHash);
+  setCustomerRefreshCookie(res, refreshToken, true);
+  const csrfToken = setCsrfCookie(req, res);
+
+  ok(res, { accessToken, refreshToken, csrfToken, customer: customerResponse(session.customerDoc) }, "Session refreshed");
+}));
+
+app.get("/api/v1/customer/auth/me", customerAuthRequired, asyncHandler(async (req, res) => {
+  const csrfToken = setCsrfCookie(req, res);
+  ok(res, { csrfToken, customer: customerResponse(req.customer) });
+}));
+
+app.post("/api/v1/customer/auth/logout", customerAuthRequired, asyncHandler(async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.orla_customer_refresh || "";
+    if (refreshToken) {
+      const tokenHash = hashToken(refreshToken);
+      const snaps = await db.collection("customer_sessions").where("refresh_token_hash", "==", tokenHash).get();
+      snaps.forEach(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() }));
+    }
+  } catch (_) {}
+
+  res.clearCookie("orla_customer_refresh");
+  ok(res, {}, "Logged out");
+}));
+
+// Customer Address Routes
+app.get("/api/v1/customer/addresses", customerAuthRequired, asyncHandler(async (req, res) => {
+  const snap = await db.collection("customer_accounts").doc(req.customer.id).collection("addresses").orderBy("created_at", "desc").get();
+  const addresses = snap.docs.map(doc => ({ addressId: doc.id, ...doc.data() }));
+  ok(res, { addresses });
+}));
+
+app.post("/api/v1/customer/addresses", customerAuthRequired, asyncHandler(async (req, res) => {
+  const fullName = String(req.body.fullName || "").trim();
+  const phoneNumber = String(req.body.phoneNumber || "").trim();
+  const streetAddress = String(req.body.streetAddress || "").trim();
+  const city = String(req.body.city || "").trim();
+  const country = String(req.body.country || "United Arab Emirates").trim();
+
+  if (!fullName || !phoneNumber || !streetAddress || !city || !country) {
+    return fail(res, 422, "Receiver name, phone, street address, city and country are required");
+  }
+
+  const address = {
+    addressType: String(req.body.addressType || "Home").trim(),
+    fullName,
+    phoneNumber,
+    streetAddress,
+    city,
+    area: String(req.body.area || "").trim(),
+    emirate: String(req.body.emirate || req.body.state || "").trim(),
+    country,
+    pincode: String(req.body.pincode || req.body.zipCode || "").trim(),
+    isDefaultShipping: Boolean(req.body.isDefaultShipping),
+    isDefaultBilling: Boolean(req.body.isDefaultBilling)
+  };
+
+  const addressesRef = db.collection("customer_accounts").doc(req.customer.id).collection("addresses");
+  const ref = addressesRef.doc();
+
+  if (address.isDefaultShipping) await clearDefaultAddress(req.customer.id, "isDefaultShipping", ref.id);
+  if (address.isDefaultBilling) await clearDefaultAddress(req.customer.id, "isDefaultBilling", ref.id);
+
+  await ref.set({
+    ...address,
+    created_at: admin.firestore.FieldValue.serverTimestamp(),
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  });
+
+  ok(res, { address: { addressId: ref.id, ...address } }, "Address saved");
+}));
+
+app.put("/api/v1/customer/addresses/:addressId", customerAuthRequired, asyncHandler(async (req, res) => {
+  const addressRef = db.collection("customer_accounts").doc(req.customer.id).collection("addresses").doc(req.params.addressId);
+  const existing = await addressRef.get();
+  if (!existing.exists) return fail(res, 404, "Address not found");
+
+  const updateData = {
+    addressType: String(req.body.addressType || "Home").trim(),
+    fullName: String(req.body.fullName || "").trim(),
+    phoneNumber: String(req.body.phoneNumber || "").trim(),
+    streetAddress: String(req.body.streetAddress || "").trim(),
+    city: String(req.body.city || "").trim(),
+    area: String(req.body.area || "").trim(),
+    emirate: String(req.body.emirate || req.body.state || "").trim(),
+    country: String(req.body.country || "United Arab Emirates").trim(),
+    pincode: String(req.body.pincode || req.body.zipCode || "").trim(),
+    isDefaultShipping: Boolean(req.body.isDefaultShipping),
+    isDefaultBilling: Boolean(req.body.isDefaultBilling)
+  };
+
+  if (!updateData.fullName || !updateData.phoneNumber || !updateData.streetAddress || !updateData.city || !updateData.country) {
+    return fail(res, 422, "Receiver name, phone, street address, city and country are required");
+  }
+
+  if (updateData.isDefaultShipping) await clearDefaultAddress(req.customer.id, "isDefaultShipping", req.params.addressId);
+  if (updateData.isDefaultBilling) await clearDefaultAddress(req.customer.id, "isDefaultBilling", req.params.addressId);
+
+  await addressRef.update({ ...updateData, updated_at: admin.firestore.FieldValue.serverTimestamp() });
+  ok(res, { address: { addressId: req.params.addressId, ...updateData } }, "Address updated");
+}));
+
+app.delete("/api/v1/customer/addresses/:addressId", customerAuthRequired, asyncHandler(async (req, res) => {
+  const addressRef = db.collection("customer_accounts").doc(req.customer.id).collection("addresses").doc(req.params.addressId);
+  const existing = await addressRef.get();
+  if (!existing.exists) return fail(res, 404, "Address not found");
+
+  await addressRef.delete();
+  ok(res, { addressId: req.params.addressId }, "Address deleted");
 }));
 
 // Dashboard Route
