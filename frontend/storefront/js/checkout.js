@@ -5,6 +5,13 @@
   function addressLine(address) {
     return [address.streetAddress, address.area, address.city, address.emirate || address.state, address.country, address.pincode || address.zipCode].filter(Boolean).join(", ");
   }
+
+  function persistSelectedAddress() {
+    if (!window.OrlaFlow) return;
+    const selected = state.addresses.find((item) => String(item.addressId) === String(state.selectedAddressId));
+    if (selected) OrlaFlow.saveCheckout({ selectedAddressId: state.selectedAddressId, shippingAddress: selected });
+  }
+
   function renderAddresses() {
     if (!state.addresses.length) {
       els.addressOptions.innerHTML = `<div class="empty-state">No saved address yet. Add a delivery address below.</div>`;
@@ -19,28 +26,33 @@
         <input type="radio" name="selectedAddress" value="${address.addressId}" ${String(state.selectedAddressId) === String(address.addressId) ? "checked" : ""}>
         <strong>${OrlaCustomer.escapeHtml(address.addressType || "Home")}</strong>
         ${address.isDefaultShipping ? `<span class="badge" style="margin-left:8px;">Default</span>` : ""}
-        <p>${OrlaCustomer.escapeHtml(address.fullName)} · ${OrlaCustomer.escapeHtml(address.phoneNumber)}</p>
+        <p>${OrlaCustomer.escapeHtml(address.fullName)} - ${OrlaCustomer.escapeHtml(address.phoneNumber)}</p>
         <p>${OrlaCustomer.escapeHtml(addressLine(address))}</p>
       </label>
     `).join("");
+    persistSelectedAddress();
   }
+
   async function loadAddresses() {
     const data = await OrlaCustomer.api("/api/v1/customer/addresses");
     state.addresses = data.addresses || [];
     renderAddresses();
   }
+
   function payloadFromCheckoutForm() {
     const data = OrlaCustomer.formToObject(els.form);
     data.isDefaultShipping = els.form.isDefaultShipping.checked;
     data.isDefaultBilling = els.form.isDefaultBilling.checked;
     return data;
   }
+
   function clearForm() {
     els.form.reset();
     els.form.addressType.value = "Home";
     els.form.country.value = "United Arab Emirates";
     els.form.saveAddress.checked = true;
   }
+
   async function addInlineAddress(event) {
     event.preventDefault();
     const button = event.submitter;
@@ -58,6 +70,8 @@
         clearForm();
         OrlaCustomer.showMessage(els.success, "Address saved to your profile and selected for delivery.");
       } else {
+        state.selectedAddressId = null;
+        OrlaFlow.saveCheckout({ selectedAddressId: null, shippingAddress: payload });
         OrlaCustomer.showMessage(els.success, "Address will be used for this checkout only.");
       }
     } catch (err) {
@@ -66,6 +80,7 @@
       OrlaCustomer.setLoading(button, false);
     }
   }
+
   async function init() {
     els.addressOptions = document.querySelector("#addressOptions");
     els.form = document.querySelector("#checkoutAddressForm");
@@ -76,10 +91,14 @@
     document.querySelector("#checkoutCustomerName").textContent = state.customer.fullName || state.customer.email;
     document.querySelector("#logoutBtn").addEventListener("click", OrlaCustomer.logout);
     els.addressOptions.addEventListener("change", (event) => {
-      if (event.target.name === "selectedAddress") state.selectedAddressId = event.target.value;
+      if (event.target.name === "selectedAddress") {
+        state.selectedAddressId = event.target.value;
+        persistSelectedAddress();
+      }
     });
     els.form.addEventListener("submit", addInlineAddress);
     await loadAddresses();
   }
+
   document.addEventListener("DOMContentLoaded", init);
 })();

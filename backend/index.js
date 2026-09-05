@@ -19,8 +19,10 @@ app.set("etag", "strong");
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
 
-const JWT_SECRET = process.env.JWT_SECRET || "orlatrends_local_access_secret_change_me";
-const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || "orlatrends_local_refresh_secret_change_me";
+const IS_LOCAL_RUNTIME = process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV !== "production";
+const ALLOW_DEFAULT_ADMIN = IS_LOCAL_RUNTIME && process.env.ALLOW_DEFAULT_ADMIN !== "false";
+const JWT_SECRET = process.env.JWT_SECRET || (IS_LOCAL_RUNTIME ? "orlatrends_local_access_secret_change_me" : "");
+const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || (IS_LOCAL_RUNTIME ? "orlatrends_local_refresh_secret_change_me" : "");
 
 const ALL_PERMISSIONS = [
   "dashboard.read", "catalog.read", "catalog.write", "orders.read", "orders.write",
@@ -58,6 +60,55 @@ function ok(res, data = {}, message = "OK") { res.json({ success: true, message,
 function fail(res, status, message, details = null) { res.status(status).json({ success: false, message, details }); }
 function asyncHandler(fn) { return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next); }
 function hashToken(token) { return crypto.createHash("sha256").update(token).digest("hex"); }
+function authSecretsReady(res) {
+  if (JWT_SECRET && REFRESH_SECRET) return true;
+  fail(res, 500, "Authentication secrets are not configured");
+  return false;
+}
+function publicAdmin(adminDoc = {}) {
+  const { password_hash, passwordHash, ...safe } = adminDoc;
+  return safe;
+}
+function orderNumber() {
+  return "OT-" + Date.now().toString().slice(-8);
+}
+function normalizeOrderPayload(body, customerDoc) {
+  const items = Array.isArray(body.items) ? body.items.map(item => ({
+    productId: String(item.productId || item.id || ""),
+    sku: String(item.sku || ""),
+    name: String(item.name || item.product_name || "Product"),
+    price: Number(item.price || 0),
+    quantity: Math.max(1, Number(item.quantity || item.qty || 1)),
+    image: String(item.image || item.image_url || "")
+  })) : [];
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shipping = Number(body.shipping || 0);
+  const tax = Number(body.tax || 0);
+  const total = Number(body.total || subtotal + shipping + tax);
+  const method = String(body.paymentMethod || body.payment || "Cash on delivery");
+  const isCod = /cash|cod/i.test(method);
+  return {
+    order_number: orderNumber(),
+    customer_id: customerDoc.id,
+    customer_email: customerDoc.email,
+    customer_name: customerDoc.full_name || customerDoc.fullName || customerDoc.email,
+    items,
+    item_count: items.reduce((sum, item) => sum + item.quantity, 0),
+    subtotal,
+    shipping,
+    tax,
+    total,
+    currency: String(body.currency || "AED"),
+    payment_method: method,
+    payment_status: isCod ? "pending" : "unpaid",
+    status: isCod ? "processing" : "pending",
+    shipping_address: body.shippingAddress || null,
+    selected_address_id: body.selectedAddressId || null,
+    channel: "Storefront",
+    created_at: admin.firestore.FieldValue.serverTimestamp(),
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  };
+}
 
 async function logActivity(adminId, action, module) {
   try {
@@ -66,7 +117,7 @@ async function logActivity(adminId, action, module) {
 }
 
 async function findAdminById(id) {
-  if (id === "admin_default_id") {
+  if (ALLOW_DEFAULT_ADMIN && id === "admin_default_id") {
     return { id: "admin_default_id", email: "admin@orlatrends.com", full_name: "Admin User", role_name: "Super Admin", status: "active", permissions: ALL_PERMISSIONS };
   }
   try {
@@ -75,7 +126,7 @@ async function findAdminById(id) {
   } catch (err) {
     console.warn("Firestore findAdminById fallback:", err.message);
   }
-  return { id: "admin_default_id", email: "admin@orlatrends.com", full_name: "Admin User", role_name: "Super Admin", status: "active", permissions: ALL_PERMISSIONS };
+  return null;
 }
 
 async function findAdminByEmail(email) {
@@ -90,7 +141,7 @@ async function findAdminByEmail(email) {
     console.warn("Firestore findAdminByEmail fallback:", err.message);
   }
   
-  if (normEmail === "admin@orlatrends.com") {
+  if (ALLOW_DEFAULT_ADMIN && normEmail === "admin@orlatrends.com") {
     return {
       id: "admin_default_id",
       email: "admin@orlatrends.com",
@@ -133,6 +184,7 @@ async function issueRefresh(adminDoc, req, rememberMe, oldHash = null) {
 }
 
 async function authRequired(req, res, next) {
+  if (!authSecretsReady(res)) return;
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token) return fail(res, 401, "Login required");
@@ -253,6 +305,7 @@ async function issueCustomerRefresh(customerDoc, req, rememberMe, oldHash = null
 }
 
 async function customerAuthRequired(req, res, next) {
+  if (!authSecretsReady(res)) return;
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token) return fail(res, 401, "Customer login required");
@@ -270,6 +323,7 @@ async function customerAuthRequired(req, res, next) {
 }
 
 async function getValidCustomerRefresh(req) {
+  if (!JWT_SECRET || !REFRESH_SECRET) return null;
   const refreshToken = req.cookies?.orla_customer_refresh || req.body?.refreshToken || "";
   if (!refreshToken) return null;
 
@@ -312,6 +366,7 @@ app.get("/health", (req, res) => {
 
 // Authentication Routes
 app.post("/api/auth/login", asyncHandler(async (req, res) => {
+  if (!authSecretsReady(res)) return;
   const email = String(req.body.email || "").toLowerCase().trim();
   const password = String(req.body.password || "");
   const rememberMe = Boolean(req.body.rememberMe);
@@ -335,7 +390,43 @@ app.get("/api/auth/me", authRequired, asyncHandler(async (req, res) => {
   ok(res, { admin: { id: req.admin.id, email: req.admin.email, fullName: req.admin.full_name, role: req.admin.role_name, permissions: req.admin.permissions } });
 }));
 
+app.post("/api/auth/refresh", asyncHandler(async (req, res) => {
+  if (!authSecretsReady(res)) return;
+  const refreshToken = req.cookies?.orla_refresh || req.body?.refreshToken || "";
+  if (!refreshToken) return fail(res, 401, "Admin session expired. Please login again.");
+
+  try {
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+    const tokenHash = hashToken(refreshToken);
+    const snap = await db.collection("admin_sessions").where("refresh_token_hash", "==", tokenHash).limit(1).get();
+    if (snap.empty) return fail(res, 401, "Admin session expired. Please login again.");
+
+    const session = snap.docs[0].data();
+    const expiresAt = session.expires_at?.toDate ? session.expires_at.toDate() : new Date(session.expires_at);
+    if (session.revoked_at || (expiresAt && expiresAt <= new Date())) return fail(res, 401, "Admin session expired. Please login again.");
+
+    const adminDoc = await findAdminById(decoded.sub);
+    if (!adminDoc || adminDoc.status !== "active") return fail(res, 401, "Account is not active");
+
+    const accessToken = signAccess(adminDoc);
+    const newRefresh = await issueRefresh(adminDoc, req, true, tokenHash);
+    res.cookie("orla_refresh", newRefresh, { httpOnly: true, sameSite: "lax", maxAge: 30 * 86400000 });
+    ok(res, { accessToken, refreshToken: newRefresh, admin: { id: adminDoc.id, email: adminDoc.email, fullName: adminDoc.full_name, role: adminDoc.role_name, permissions: adminDoc.permissions } }, "Session refreshed");
+  } catch (_) {
+    fail(res, 401, "Admin session expired. Please login again.");
+  }
+}));
+
 app.post("/api/auth/logout", authRequired, asyncHandler(async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.orla_refresh || req.body?.refreshToken || "";
+    if (refreshToken) {
+      const tokenHash = hashToken(refreshToken);
+      const snaps = await db.collection("admin_sessions").where("refresh_token_hash", "==", tokenHash).get();
+      snaps.forEach(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() }));
+    }
+  } catch (_) {}
+  res.clearCookie("orla_refresh");
   await logActivity(req.admin.id, "Logged out", "Auth");
   ok(res, {}, "Logged out");
 }));
@@ -349,6 +440,7 @@ app.get("/api/security/csrf", (req, res) => {
 
 // Customer Authentication Routes
 app.post("/api/v1/customer/auth/register", asyncHandler(async (req, res) => {
+  if (!authSecretsReady(res)) return;
   const firstName = String(req.body.firstName || "").trim();
   const lastName = String(req.body.lastName || "").trim();
   const email = normalizeEmail(req.body.email);
@@ -400,6 +492,7 @@ app.post("/api/v1/customer/auth/register", asyncHandler(async (req, res) => {
 }));
 
 app.post("/api/v1/customer/auth/login", asyncHandler(async (req, res) => {
+  if (!authSecretsReady(res)) return;
   const email = normalizeEmail(req.body.email);
   const password = String(req.body.password || "");
   const rememberMe = Boolean(req.body.rememberMe);
@@ -422,6 +515,7 @@ app.post("/api/v1/customer/auth/login", asyncHandler(async (req, res) => {
 }));
 
 app.post("/api/v1/customer/auth/refresh", asyncHandler(async (req, res) => {
+  if (!authSecretsReady(res)) return;
   const session = await getValidCustomerRefresh(req);
   if (!session) return fail(res, 401, "Customer session expired. Please login again.");
 
@@ -538,6 +632,48 @@ app.delete("/api/v1/customer/addresses/:addressId", customerAuthRequired, asyncH
   ok(res, { addressId: req.params.addressId }, "Address deleted");
 }));
 
+// Storefront Product & Checkout Routes
+app.get("/api/storefront/products", asyncHandler(async (_req, res) => {
+  let rows = [];
+  try {
+    const snap = await db.collection("products").where("status", "in", ["Enabled", "enabled", "active", true]).limit(100).get();
+    rows = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (_) {}
+  ok(res, { rows, products: rows });
+}));
+
+app.get("/api/storefront/products/:slug", asyncHandler(async (req, res) => {
+  const slug = String(req.params.slug || "").toLowerCase().trim();
+  let product = null;
+  try {
+    const direct = await db.collection("products").doc(slug).get();
+    if (direct.exists) product = { id: direct.id, ...direct.data() };
+    if (!product) {
+      const snap = await db.collection("products").where("slug", "==", slug).limit(1).get();
+      if (!snap.empty) product = { id: snap.docs[0].id, ...snap.docs[0].data() };
+    }
+    if (!product) {
+      const skuSnap = await db.collection("products").where("sku", "==", slug).limit(1).get();
+      if (!skuSnap.empty) product = { id: skuSnap.docs[0].id, ...skuSnap.docs[0].data() };
+    }
+  } catch (_) {}
+  if (!product) return fail(res, 404, "Product not found");
+  ok(res, { product });
+}));
+
+app.post("/api/v1/customer/orders", customerAuthRequired, asyncHandler(async (req, res) => {
+  const data = normalizeOrderPayload(req.body, req.customer);
+  if (!data.items.length) return fail(res, 422, "Cart is empty");
+
+  if (data.selected_address_id && !data.shipping_address) {
+    const addressDoc = await db.collection("customer_accounts").doc(req.customer.id).collection("addresses").doc(String(data.selected_address_id)).get();
+    if (addressDoc.exists) data.shipping_address = { addressId: addressDoc.id, ...addressDoc.data() };
+  }
+
+  const ref = await db.collection("orders").add(data);
+  ok(res, { order: { id: ref.id, ...data, created_at: new Date().toISOString(), updated_at: new Date().toISOString() } }, "Order created");
+}));
+
 // Dashboard Route
 app.get("/api/dashboard/overview", authRequired, requirePermission("dashboard.read"), asyncHandler(async (req, res) => {
   let productsCount = 0, ordersCount = 0, customersCount = 0, revenue = 0;
@@ -638,6 +774,15 @@ app.post("/api/orders", authRequired, requirePermission("orders.write"), asyncHa
   } catch (_) {}
   await logActivity(req.admin.id, `Created order ${refId}`, "Orders");
   ok(res, { id: refId, ...data }, "Order created");
+}));
+
+app.put("/api/orders/:id", authRequired, requirePermission("orders.write"), asyncHandler(async (req, res) => {
+  const updateData = { ...req.body, updated_at: admin.firestore.FieldValue.serverTimestamp() };
+  try {
+    await db.collection("orders").doc(req.params.id).update(updateData);
+  } catch (_) {}
+  await logActivity(req.admin.id, `Updated order ${req.params.id}`, "Orders");
+  ok(res, { id: req.params.id, ...req.body }, "Order updated");
 }));
 
 // Customers Routes
@@ -811,7 +956,7 @@ app.get("/api/staff", authRequired, requirePermission("staff.read"), asyncHandle
   let admins = [];
   try {
     const adminsSnap = await db.collection("admins").get();
-    admins = adminsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    admins = adminsSnap.docs.map(doc => publicAdmin({ id: doc.id, ...doc.data() }));
   } catch (_) {}
   if (!admins.length) {
     admins = [{ id: "admin_default_id", email: "admin@orlatrends.com", full_name: "Admin User", role_name: "Super Admin", status: "active" }];
@@ -859,6 +1004,9 @@ app.get("/api/logs", authRequired, requirePermission("logs.read"), asyncHandler(
 app.use("/api", authRequired, asyncHandler(async (req, res) => {
   const colName = req.path.replace(/^\//, "").split("/")[0].replace(/[^a-zA-Z0-9_-]/g, "");
   if (!colName) return fail(res, 400, "Invalid route");
+  if (["admins", "customer_accounts", "admin_sessions", "customer_sessions"].includes(colName)) {
+    return fail(res, 403, "This collection is not available through the generic API");
+  }
   let rows = [];
   try {
     const snap = await db.collection(colName).limit(100).get();
@@ -873,5 +1021,5 @@ app.use((err, _req, res, _next) => {
   fail(res, 500, err.message || "Server error");
 });
 
-exports.api = functions.https.onRequest(app);
+exports.api = functions.runWith({ secrets: ["JWT_SECRET", "REFRESH_TOKEN_SECRET"] }).https.onRequest(app);
 

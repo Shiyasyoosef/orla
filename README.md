@@ -1,60 +1,71 @@
 # OrlaTrends E-Commerce & Admin Panel
 
-Welcome to the OrlaTrends workspace. This repository has been structured locally into clean, modular Frontend and Backend applications.
+Firebase Hosting + Cloud Functions e-commerce storefront and admin panel.
 
----
+## Workspace Architecture
 
-## ?? Workspace Architecture
-
-```
-orlaupdated--main/
-+-- README.md                      # Project documentation & local setup guide
-+-- firebase.json                  # Firebase configuration (Local Emulator & Hosting routes)
-+-- .firebaserc                    # Firebase project link
-¦
-+-- frontend/                      # ALL FRONTEND APPLICATIONS
-¦   +-- storefront/                # Customer E-Commerce Storefront & Admin UI
-¦       +-- index.html, product.html, cart.html, checkout.html, etc.
-¦       +-- assets/                # Product, category, banner images & brand logos
-¦       +-- css/                   # customer.css
-¦       +-- js/                    # Storefront scripts (auth, checkout, flow)
-¦       +-- admin/                 # Admin Panel SPA (admin.html, css/style.css, js/app.js)
-¦
-+-- backend/                       # ACTIVE BACKEND API (Firestore Integration)
-¦   +-- index.js                   # Node.js / Express API Server for Cloud Functions
-¦   +-- package.json               # Backend dependencies
-¦   +-- package-lock.json
-¦
-+-- legacy/                        # ARCHIVED LEGACY CODE
-¦   +-- mysql-backend/             # Original MySQL Express backend & database schema.sql
-¦
-+-- docs/                          # DOCUMENTATION & REPORTS
-    +-- GEO_SWITCHER_TEST_REPORT.md
-    +-- COPY_TO_PENDRIVE_GUIDE.txt
-    +-- ROOT_MAP_ORLATRENDS.md
+```text
+firebase.json
+frontend/storefront/
+  index.html, product.html, cart.html, checkout.html, payment.html
+  js/customer-auth.js, js/customer-addresses.js, js/checkout.js, js/commerce-flow.js
+  admin/admin.html, admin/login.html, admin/css/style.css, admin/js/app.js
+backend/
+  index.js
+  package.json
+docs/
 ```
 
----
+## Firebase Project
 
-## ?? Local Development & Running
+Project ID: `orlatrends-6ac85`
 
-### 1. Backend API (`backend/`)
-To install backend dependencies locally:
+Hosting serves `frontend/storefront`. API requests under `/api/**` are rewritten to the `api` Cloud Function from `backend/index.js`. `/admin` opens `frontend/storefront/admin/admin.html`.
+
+Headers and rewrites belong in `firebase.json`; root `_headers` and `_redirects` files are not used by Firebase Hosting.
+
+## Environment
+
+Production auth secrets must be configured before deploy. Do not rely on local fallback secrets in production.
+
 ```bash
 cd backend
 npm install
+firebase functions:secrets:set JWT_SECRET
+firebase functions:secrets:set REFRESH_TOKEN_SECRET
 ```
 
-### 2. Local Firebase Emulator (Optional)
-To run the local Firebase emulator for both Hosting and Functions:
+For local emulator development, fallback secrets and the default admin can be used. To disable the local default admin:
+
+```powershell
+$env:ALLOW_DEFAULT_ADMIN = "false"
+```
+
+## Commands
+
+Run from `backend/`:
+
 ```bash
-firebase emulators:start
+npm run lint
+npm run serve
+npm run deploy
 ```
 
----
+Or from the repository root:
 
-## ?? Environment & Database
-- **Database**: Connected to Google Cloud Firestore.
-- **Admin Authentication**: Uses JWT Access & Refresh Token authentication with bcrypt password hashing.
-- **Default Admin Account**: admin@orlatrends.com / Admin@123.
+```bash
+firebase emulators:start --only hosting,functions
+firebase deploy --only hosting,functions
+```
 
+## Test Checklist
+
+- `/` opens the storefront.
+- `/admin` redirects unauthenticated users to `/admin/login.html`.
+- Admin login works with a Firestore admin account in production.
+- Customer can register, log in, refresh session, log out, and log in again.
+- Account page can add, edit, delete, and list saved addresses.
+- Checkout can select a saved address or save/use a new address.
+- Payment places an order through `/api/v1/customer/orders`.
+- Admin dashboard/orders/products/customers/settings endpoints return Firestore data without exposing `password_hash`.
+- `npm run lint` passes in `backend/`.

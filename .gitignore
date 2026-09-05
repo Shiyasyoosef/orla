@@ -6,6 +6,8 @@
 # Generated dependencies
 node_modules/
 **/node_modules/
+.firebase/
+*.cache
 
 # Runtime files and customer uploads
 *.log

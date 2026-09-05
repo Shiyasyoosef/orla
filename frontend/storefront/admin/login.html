@@ -8,14 +8,75 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="style.css?v=20260828orders1" />
+  <link rel="stylesheet" href="/admin/css/style.css?v=20260830_fix1" />
 </head>
 <body>
-  <div class="aurora aurora-one"></div>
-  <div class="aurora aurora-two"></div>
-  <div id="app"></div>
-  <div id="toast" class="toast"></div>
-  <script src="app.js?v=20260828orders1"></script>
-  <script src="admin-enhancements.js?v=20260829phase1"></script>
+  <main style="min-height:100vh;display:grid;place-items:center;background:#f8fafc;padding:24px;">
+    <section class="card" style="width:min(420px,100%);margin:0;">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-subtitle">ORLA TRENDS</div>
+          <div class="card-title">Admin Sign In</div>
+        </div>
+      </div>
+      <form id="adminLoginForm" class="form-grid">
+        <div id="loginError" class="alert alert-danger" style="display:none;"></div>
+        <div class="form-group full-width">
+          <label class="form-label" for="email">Email</label>
+          <input id="email" name="email" class="form-control" type="email" autocomplete="username" required>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label" for="password">Password</label>
+          <input id="password" name="password" class="form-control" type="password" autocomplete="current-password" required>
+        </div>
+        <label style="display:flex;gap:8px;align-items:center;font-size:13px;color:#475569;">
+          <input type="checkbox" name="rememberMe" checked> Remember me
+        </label>
+        <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;">Sign in</button>
+      </form>
+    </section>
+  </main>
+  <script>
+    const TOKEN_KEY = "orlaAdminAccessToken";
+    const REFRESH_KEY = "orlaAdminRefreshToken";
+    const ADMIN_KEY = "orlaAdminProfile";
+    const API_BASE = window.ORLA_API_BASE || "";
+    function showError(message) {
+      const box = document.querySelector("#loginError");
+      box.textContent = message || "";
+      box.style.display = message ? "block" : "none";
+    }
+    document.querySelector("#adminLoginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = event.submitter;
+      const original = button.textContent;
+      showError("");
+      button.disabled = true;
+      button.textContent = "Signing in...";
+      try {
+        const form = event.currentTarget;
+        const body = Object.fromEntries(new FormData(form).entries());
+        body.rememberMe = form.rememberMe.checked;
+        const response = await fetch(`${API_BASE}/api/auth/login`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || payload.success === false) throw new Error(payload.message || "Login failed");
+        const data = payload.data || {};
+        localStorage.setItem(TOKEN_KEY, data.accessToken || "");
+        localStorage.setItem(REFRESH_KEY, data.refreshToken || "");
+        localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin || {}));
+        location.href = "/admin";
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = original;
+      }
+    });
+  </script>
 </body>
 </html>

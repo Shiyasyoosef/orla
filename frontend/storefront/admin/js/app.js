@@ -87,6 +87,154 @@ const DB = {
   ]
 };
 
+const API_BASE = window.ORLA_API_BASE || "";
+const TOKEN_KEY = "orlaAdminAccessToken";
+const REFRESH_KEY = "orlaAdminRefreshToken";
+const ADMIN_KEY = "orlaAdminProfile";
+let bootstrapped = false;
+
+function getAdminToken() {
+  return localStorage.getItem(TOKEN_KEY) || "";
+}
+
+function setAdminSession(data) {
+  if (data.accessToken) localStorage.setItem(TOKEN_KEY, data.accessToken);
+  if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
+  if (data.admin) localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
+}
+
+function clearAdminSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+  localStorage.removeItem(ADMIN_KEY);
+}
+
+function toMoney(value) {
+  return Number(value || 0);
+}
+
+function asDate(value) {
+  if (!value) return "";
+  if (value._seconds) return new Date(value._seconds * 1000).toISOString().slice(0, 16).replace("T", " ");
+  if (value.seconds) return new Date(value.seconds * 1000).toISOString().slice(0, 16).replace("T", " ");
+  return String(value).slice(0, 16).replace("T", " ");
+}
+
+function normalizeStatus(value, fallback = "Active") {
+  const raw = String(value || fallback).toLowerCase();
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+function normalizeOrder(row) {
+  return {
+    id: String(row.order_number || row.orderId || row.id || ""),
+    firestoreId: row.id,
+    customer: row.customer_name || row.customer || row.customer_email || "Customer",
+    date: asDate(row.created_at || row.date) || new Date().toISOString().slice(0, 16).replace("T", " "),
+    status: normalizeStatus(row.status || "Pending"),
+    payment: row.payment_method || row.payment || "Not set",
+    total: toMoney(row.total),
+    subtotal: toMoney(row.subtotal || row.total),
+    tax: toMoney(row.tax),
+    shipping: toMoney(row.shipping),
+    items: Number(row.item_count || row.items?.length || row.items || 0)
+  };
+}
+
+function normalizeProduct(row) {
+  return {
+    id: row.id,
+    sku: row.sku || row.id,
+    name: row.name || row.product_name || "Product",
+    type: row.type || row.product_type || "Simple Product",
+    price: toMoney(row.price),
+    qty: Number(row.qty || row.stock || row.quantity || 0),
+    status: normalizeStatus(row.status || "Enabled", "Enabled"),
+    category: row.category || row.category_name || "Catalog"
+  };
+}
+
+function normalizeCustomer(row) {
+  return {
+    id: row.id,
+    name: row.name || row.full_name || [row.first_name, row.last_name].filter(Boolean).join(" ") || row.email || "Customer",
+    email: row.email || "",
+    group: row.group || "General",
+    phone: row.phone || row.phone_number || "",
+    orders: Number(row.orders || row.orders_count || 0),
+    sales: toMoney(row.sales || row.lifetime_sales || 0),
+    status: normalizeStatus(row.status || "Active")
+  };
+}
+
+async function api(path, options = {}, retry = true) {
+  const headers = { ...(options.headers || {}) };
+  const token = getAdminToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (options.body && !(options.body instanceof FormData) && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+  const response = await fetch(`${API_BASE}${path}`, { credentials: "include", ...options, headers });
+  const payload = await response.json().catch(() => ({ success: false, message: response.statusText }));
+  if (response.status === 401 && retry && path !== "/api/auth/refresh") {
+    const refreshed = await refreshAdminSession();
+    if (refreshed) return api(path, options, false);
+  }
+  if (!response.ok || payload.success === false) throw new Error(payload.message || "Request failed");
+  return payload.data || {};
+}
+window.api = api;
+
+async function refreshAdminSession() {
+  try {
+    const refreshToken = localStorage.getItem(REFRESH_KEY) || "";
+    const response = await fetch(`${API_BASE}/api/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload.success === false) throw new Error(payload.message || "Refresh failed");
+    setAdminSession(payload.data || {});
+    return true;
+  } catch (_) {
+    clearAdminSession();
+    return false;
+  }
+}
+
+async function requireAdmin() {
+  if (!getAdminToken()) {
+    const refreshed = await refreshAdminSession();
+    if (!refreshed) {
+      location.href = "/admin/login.html";
+      return false;
+    }
+  }
+  try {
+    const data = await api("/api/auth/me");
+    setAdminSession(data);
+    const pill = document.querySelector(".user-pill span");
+    if (pill) pill.textContent = data.admin?.fullName || data.admin?.email || "Admin User";
+    return true;
+  } catch (_) {
+    clearAdminSession();
+    location.href = "/admin/login.html";
+    return false;
+  }
+}
+
+async function loadLiveData() {
+  const loaders = [
+    api("/api/orders/advanced").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.orders = data.rows.map(normalizeOrder); }),
+    api("/api/products").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.products = data.rows.map(normalizeProduct); }),
+    api("/api/customers").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.customers = data.rows.map(normalizeCustomer); }),
+    api("/api/cms-pages").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.cmsPages = data.rows.map(row => ({ id: row.id, title: row.title || row.name || "Page", urlKey: row.urlKey || row.slug || row.id, layout: row.layout || "1 Column", status: normalizeStatus(row.status || "Enabled", "Enabled"), updated: asDate(row.updated_at || row.updated) })); }),
+    api("/api/inventory").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.products = data.rows.map(row => normalizeProduct({ ...row, name: row.product_name || row.name, qty: row.stock })); })
+  ];
+  await Promise.allSettled(loaders);
+  bootstrapped = true;
+}
+
 /* ==========================================================
    2. REACTIVE FILTER & SORT STATE SYSTEM
 ========================================================== */
@@ -218,7 +366,12 @@ function navigateTo(hash) {
 }
 
 window.addEventListener('hashchange', router);
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  const mainEl = document.getElementById('mainContent');
+  if (mainEl) mainEl.innerHTML = '<div class="card"><div class="card-title">Loading admin data...</div></div>';
+  const authed = await requireAdmin();
+  if (!authed) return;
+  await loadLiveData();
   if (!window.location.hash) window.location.hash = '#/dashboard';
   router();
 });
@@ -900,7 +1053,7 @@ function renderProductsTableOnly() {
   list.sort((a, b) => {
     if (col === 'price') return (a.price - b.price) * dir;
     if (col === 'qty') return (a.qty - b.qty) * dir;
-    if (col === 'id') return (a.id - b.id) * dir;
+    if (col === 'id') return String(a.id).localeCompare(String(b.id), undefined, { numeric: true }) * dir;
     return (a[col] > b[col] ? 1 : -1) * dir;
   });
 
@@ -1159,7 +1312,7 @@ function renderCustomersTableOnly() {
   list.sort((a, b) => {
     if (col === 'sales') return (a.sales - b.sales) * dir;
     if (col === 'orders') return (a.orders - b.orders) * dir;
-    if (col === 'id') return (a.id - b.id) * dir;
+    if (col === 'id') return String(a.id).localeCompare(String(b.id), undefined, { numeric: true }) * dir;
     return (a[col] > b[col] ? 1 : -1) * dir;
   });
 
@@ -1759,11 +1912,15 @@ function flushCacheFast() {
   showToast('Flushed Orla Cache Storage Successfully.');
 }
 
-function handleLogout() {
-  showToast('Admin session closed safely.');
+async function handleLogout() {
+  try {
+    await api('/api/auth/logout', { method: 'POST', body: JSON.stringify({ refreshToken: localStorage.getItem(REFRESH_KEY) || '' }) }, false);
+  } catch (_) {}
+  clearAdminSession();
+  location.href = '/admin/login.html';
 }
 
-function saveNewProduct() {
+async function saveNewProduct() {
   const nameInput = document.getElementById('prodName');
   const skuInput = document.getElementById('prodSku');
   if (!nameInput || !skuInput) return;
@@ -1779,19 +1936,17 @@ function saveNewProduct() {
     return;
   }
 
-  DB.products.unshift({
-    id: 100 + DB.products.length + 1,
-    name,
-    sku,
-    price,
-    qty,
-    type: 'Simple Product',
-    status: 'Enabled',
-    category
-  });
-
-  showToast(`Product "${name}" successfully saved.`);
-  navigateTo('#/catalog/products');
+  try {
+    const saved = await api('/api/products', {
+      method: 'POST',
+      body: JSON.stringify({ name, sku, price, stock: qty, qty, type: 'Simple Product', status: 'Enabled', category })
+    });
+    DB.products.unshift(normalizeProduct(saved));
+    showToast(`Product "${name}" successfully saved.`);
+    navigateTo('#/catalog/products');
+  } catch (err) {
+    showToast(err.message || 'Product save failed', 'danger');
+  }
 }
 
 function exportOrdersCSV() {
