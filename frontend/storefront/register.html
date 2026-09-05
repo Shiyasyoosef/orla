@@ -9,13 +9,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/customer.css">
 </head>
-<body>
-  <main class="customer-shell">
-    <section class="auth-card" aria-labelledby="registerTitle">
+<body class="customer-login-modal-page">
+  <iframe class="auth-site-preview" src="index.html" aria-hidden="true" tabindex="-1"></iframe>
+  <div class="auth-site-scrim"></div>
+  <main class="customer-shell customer-modal-shell">
+    <section class="auth-card auth-modal-card" aria-labelledby="registerTitle">
+      <a class="auth-close-btn" href="index.html" aria-label="Close sign up">×</a>
+      <div class="auth-visual" aria-hidden="true">
+        <span class="fashion-orb orb-dress"><span class="dress-icon"></span></span>
+        <span class="fashion-orb orb-abaya"><span class="abaya-icon"></span></span>
+        <span class="fashion-orb orb-cap"><span class="cap-icon"></span></span>
+        <span class="fashion-orb orb-glass"><span class="glass-icon"></span></span>
+        <span class="fashion-orb orb-bag"><span class="bag-icon"></span></span>
+      </div>
       <div class="auth-mark">
         <div class="auth-logo">O</div>
-        <h1 id="registerTitle">Create account</h1>
-        <p>Minimal setup only. Shipping and billing addresses are added later from your account or checkout.</p>
+        <h1 id="registerTitle">Hala! Let's get started</h1>
+        <p>Create your OrlaTrends customer account for shopping, addresses and checkout.</p>
+      </div>
+      <div class="auth-tabs" aria-label="Customer account options">
+        <a class="auth-tab" href="customer-login.html">Log in</a>
+        <button class="auth-tab active" type="button">Sign up</button>
       </div>
       <form id="registerForm" class="form-grid" novalidate>
         <div id="registerError" class="error-box"></div>
@@ -47,6 +61,7 @@
         <span>Already registered?</span>
         <a href="customer-login.html">Sign in</a>
       </div>
+      <p class="auth-site-note">This account is for the OrlaTrends storefront.</p>
     </section>
   </main>
   <script src="js/customer-auth.js"></script>

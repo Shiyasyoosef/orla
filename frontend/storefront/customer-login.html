@@ -9,13 +9,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/customer.css">
 </head>
-<body>
-  <main class="customer-shell">
-    <section class="auth-card" aria-labelledby="loginTitle">
+<body class="customer-login-modal-page">
+  <iframe class="auth-site-preview" src="index.html" aria-hidden="true" tabindex="-1"></iframe>
+  <div class="auth-site-scrim"></div>
+  <main class="customer-shell customer-modal-shell">
+    <section class="auth-card auth-modal-card" aria-labelledby="loginTitle">
+      <a class="auth-close-btn" href="index.html" aria-label="Close sign in">×</a>
+      <div class="auth-visual" aria-hidden="true">
+        <span class="fashion-orb orb-dress"><span class="dress-icon"></span></span>
+        <span class="fashion-orb orb-abaya"><span class="abaya-icon"></span></span>
+        <span class="fashion-orb orb-cap"><span class="cap-icon"></span></span>
+        <span class="fashion-orb orb-glass"><span class="glass-icon"></span></span>
+        <span class="fashion-orb orb-bag"><span class="bag-icon"></span></span>
+      </div>
       <div class="auth-mark">
         <div class="auth-logo">O</div>
-        <h1 id="loginTitle">Sign In</h1>
-        <p>Access your OrlaTrends account, saved addresses and faster checkout.</p>
+        <h1 id="loginTitle">Hala! Let's get started</h1>
+        <p>Log in to continue shopping on OrlaTrends, use saved addresses and complete checkout faster.</p>
+      </div>
+      <div class="auth-tabs" aria-label="Customer account options">
+        <button class="auth-tab active" type="button">Log in</button>
+        <a class="auth-tab" href="register.html">Sign up</a>
       </div>
       <form id="loginForm" class="form-grid" novalidate>
         <div id="loginError" class="error-box"></div>
@@ -30,13 +44,14 @@
             <button type="button" data-toggle-password>Show</button>
           </div>
         </div>
-        <label class="checkbox-row"><input type="checkbox" name="rememberMe" checked> Remember me</label>
+        <label class="checkbox-row auth-remember"><input type="checkbox" name="rememberMe" checked> Remember me</label>
         <button class="primary-btn" type="submit">Sign in</button>
       </form>
       <div class="auth-footer">
         <span>New to OrlaTrends?</span>
         <a href="register.html" id="createAccountLink">CREATE AN ACCOUNT</a>
       </div>
+      <p class="auth-site-note">You are signing in to the OrlaTrends customer site.</p>
     </section>
   </main>
   <script src="js/customer-auth.js"></script>

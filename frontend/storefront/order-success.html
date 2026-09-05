@@ -1,1 +1,56 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Order confirmed | OrlaTrends</title><link rel="stylesheet" href="css/customer.css"></head><body><main class="page-wrap"><a class="brand-word" href="index.html">OrlaTrends</a><section class="panel-card"><p class="page-kicker">Order confirmed</p><h1 class="page-title">Thank you for your order</h1><p id="details" class="page-subtitle"></p><div class="order-line"><span>Tracking status</span><strong>Processing</strong></div><a class="secondary-btn" style="display:inline-block;margin-top:18px" href="orders.html">Track my order</a></section></main><script src="js/commerce-flow.js"></script><script>let id=new URLSearchParams(location.search).get('id'),o=OrlaFlow.orders().find(x=>x.id===id);document.querySelector('#details').textContent=o?`Order ${o.id} · ${OrlaFlow.money(o.total)}`:'Order details unavailable.'</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Order confirmed | OrlaTrends</title>
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body>
+  <main class="page-wrap">
+    <a class="brand-word" href="index.html">OrlaTrends</a>
+    <section class="panel-card">
+      <p class="page-kicker">Order confirmed</p>
+      <h1 class="page-title">Thank you for your order</h1>
+      <p id="details" class="page-subtitle">Loading your secure order details...</p>
+      <div class="order-line">
+        <span>Tracking status</span>
+        <strong id="status">Queued</strong>
+      </div>
+      <a class="secondary-btn" style="display:inline-block;margin-top:18px" href="orders.html">View my orders</a>
+    </section>
+  </main>
+  <script src="js/commerce-flow.js"></script>
+  <script src="js/customer-auth.js"></script>
+  <script>
+    (async () => {
+      const orderId = new URLSearchParams(location.search).get("id");
+      const localOrder = OrlaFlow.orders().find((item) => String(item.id) === String(orderId));
+
+      if (localOrder) {
+        document.querySelector("#details").textContent = `Order ${localOrder.id} - ${OrlaFlow.money(localOrder.total)}`;
+        document.querySelector("#status").textContent = localOrder.status || "processing";
+      }
+
+      const customer = await OrlaCustomer.requireAuth();
+      if (!customer || !orderId) {
+        if (!orderId) document.querySelector("#details").textContent = "Order reference is unavailable.";
+        return;
+      }
+
+      try {
+        const data = await OrlaCustomer.api("/api/v1/customer/orders");
+        const order = (data.orders || []).find((item) => String(item.orderId) === String(orderId) || String(item.id) === String(orderId));
+        if (!order) {
+          if (!localOrder) throw new Error("Order details are unavailable.");
+          return;
+        }
+        document.querySelector("#details").textContent = `Order ${order.orderId} - ${OrlaFlow.money(order.total)}`;
+        document.querySelector("#status").textContent = order.status || "processing";
+      } catch (error) {
+        if (!localOrder) document.querySelector("#details").textContent = error.message;
+      }
+    })();
+  </script>
+</body>
+</html>

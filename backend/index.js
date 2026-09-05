@@ -674,6 +674,26 @@ app.post("/api/v1/customer/orders", customerAuthRequired, asyncHandler(async (re
   ok(res, { order: { id: ref.id, ...data, created_at: new Date().toISOString(), updated_at: new Date().toISOString() } }, "Order created");
 }));
 
+app.get("/api/v1/customer/orders", customerAuthRequired, asyncHandler(async (req, res) => {
+  const snap = await db.collection("orders").where("customer_id", "==", req.customer.id).limit(50).get();
+  const orders = snap.docs
+    .map(doc => {
+      const row = doc.data();
+      return {
+        id: doc.id,
+        orderId: row.order_number || doc.id,
+        total: Number(row.total || 0),
+        status: row.status || "processing",
+        paymentStatus: row.payment_status || "pending",
+        paymentMethod: row.payment_method || "",
+        items: row.items || [],
+        createdAt: row.created_at || null
+      };
+    })
+    .sort((a, b) => String(b.orderId).localeCompare(String(a.orderId)));
+  ok(res, { orders });
+}));
+
 // Dashboard Route
 app.get("/api/dashboard/overview", authRequired, requirePermission("dashboard.read"), asyncHandler(async (req, res) => {
   let productsCount = 0, ordersCount = 0, customersCount = 0, revenue = 0;
