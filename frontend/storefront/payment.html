@@ -1,1 +1,130 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Payment | OrlaTrends</title><link rel="stylesheet" href="css/customer.css"></head><body><main class="page-wrap"><a class="brand-word" href="index.html">OrlaTrends</a><p class="page-kicker">Checkout / Payment</p><h1 class="page-title">Choose payment</h1><section class="checkout-layout"><form id="pay" class="checkout-card form-grid"><div id="paymentError" class="error-box"></div><div class="field"><label>Payment method</label><select name="method"><option>Cash on delivery</option><option>Card (demo)</option></select></div><div class="field"><label>Card holder (for card)</label><input name="holder" autocomplete="cc-name"></div><button class="secondary-btn">Place order</button></form><aside class="panel-card"><h2>Total</h2><strong id="total"></strong><p class="page-subtitle">No payment is charged in this demo flow.</p></aside></section></main><script src="js/customer-auth.js"></script><script src="js/commerce-flow.js"></script><script>document.addEventListener("DOMContentLoaded",async()=>{const totalEl=document.querySelector("#total"),form=document.querySelector("#pay"),error=document.querySelector("#paymentError");const cart=OrlaFlow.get();totalEl.textContent=OrlaFlow.money(OrlaFlow.total(cart));const customer=await OrlaCustomer.requireAuth();if(!customer)return;form.onsubmit=async e=>{e.preventDefault();OrlaCustomer.showMessage(error,"");let items=OrlaFlow.get();if(!items.length){location="cart.html";return}const button=e.submitter;OrlaCustomer.setLoading(button,true,"Placing order...");try{const checkout=OrlaFlow.checkout();const paymentMethod=new FormData(form).get("method");const payload={items,total:OrlaFlow.total(items),paymentMethod,selectedAddressId:checkout.selectedAddressId,shippingAddress:checkout.shippingAddress};const data=await OrlaCustomer.api("/api/v1/customer/orders",{method:"POST",body:JSON.stringify(payload)});const order=data.order||{};const localOrder={id:order.order_number||order.id,date:new Date().toISOString(),status:order.status||"processing",items,total:payload.total,payment:paymentMethod};OrlaFlow.saveOrders([localOrder,...OrlaFlow.orders()]);OrlaFlow.saveCheckout({});OrlaFlow.set([]);location="order-success.html?id="+encodeURIComponent(localOrder.id)}catch(err){OrlaCustomer.showMessage(error,err.message)}finally{OrlaCustomer.setLoading(button,false)}}});</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Payment | OrlaTrends</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body class="store-page payment-page">
+  <header class="store-header">
+    <div class="store-header-inner">
+      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
+      <form class="store-search" role="search"><span class="material-symbols-outlined">search</span><input type="search" placeholder="What are you looking for?" aria-label="Search products"></form>
+      <nav class="store-actions" aria-label="Store actions">
+        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
+        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
+        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
+      </nav>
+    </div>
+    <nav class="store-nav" aria-label="Categories">
+      <div class="store-nav-inner">
+        <a href="index.html">New In</a>
+        <a href="index.html">Dresses</a>
+        <a href="index.html">Abayas</a>
+        <a href="index.html">Jalabiyas</a>
+        <a href="index.html">Tops & Tees</a>
+        <a href="index.html">Jeans</a>
+        <a href="index.html">Skirts</a>
+        <a href="index.html">Sports</a>
+      </div>
+    </nav>
+  </header>
+  <main class="store-container">
+    <nav class="crumbs"><a href="cart.html">Go to Bag</a><span>/</span><strong>Secure Checkout</strong></nav>
+    <div class="store-title-row"><a class="mobile-page-back" href="checkout.html" aria-label="Back to delivery"><span class="material-symbols-outlined">close</span></a><h1>Payment Method</h1><a class="pill-btn" style="display:grid;place-items:center;text-decoration:none;" href="checkout.html">Delivery Address</a></div>
+    <section class="checkout-shell">
+      <form id="pay" class="commerce-panel form-grid">
+        <div id="paymentError" class="error-box"></div>
+        <h2>Payment Methods</h2>
+        <div class="payment-options">
+          <label class="payment-option">
+            <input type="radio" name="method" value="Cash on delivery" checked>
+            <span><strong>Cash on Delivery</strong><br><small>No online payment is charged in this demo flow.</small></span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="method" value="Card (demo)">
+            <span><strong>Credit/Debit Card</strong><br><small>Visa, Mastercard and Amex demo option.</small></span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="method" value="Tabby (demo)">
+            <span><strong>Tabby</strong><br><small>Split payment demo option.</small></span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="method" value="Tamara (demo)">
+            <span><strong>Tamara</strong><br><small>Pay later demo option.</small></span>
+          </label>
+        </div>
+        <button class="bag-btn" type="submit">Place Order</button>
+      </form>
+      <aside class="commerce-panel">
+        <h2>Order Summary</h2>
+        <div id="paymentItems"></div>
+        <div class="order-line"><span>Subtotal</span><strong id="subtotal">AED 0.00</strong></div>
+        <div class="order-line"><span>Delivery</span><strong>Free</strong></div>
+        <div class="order-line"><span>VAT estimate</span><strong id="vat">AED 0.00</strong></div>
+        <div class="order-line"><span>Total</span><strong id="total">AED 0.00</strong></div>
+      </aside>
+    </section>
+  </main>
+  <nav class="mobile-commerce-nav" aria-label="Mobile shopping navigation">
+    <a href="index.html"><span class="material-symbols-outlined">home</span></a>
+    <a href="index.html"><span class="material-symbols-outlined">category</span></a>
+    <a href="wishlist.html"><span class="material-symbols-outlined">favorite</span></a>
+    <a href="cart.html"><span class="material-symbols-outlined">shopping_bag</span><span class="mobile-commerce-badge" data-cart-count>0</span></a>
+    <a href="customer-login.html"><span class="material-symbols-outlined">person</span></a>
+  </nav>
+  <script src="js/customer-auth.js"></script>
+  <script src="js/commerce-flow.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const totalEl = document.querySelector("#total");
+      const subtotalEl = document.querySelector("#subtotal");
+      const vatEl = document.querySelector("#vat");
+      const itemsEl = document.querySelector("#paymentItems");
+      const form = document.querySelector("#pay");
+      const error = document.querySelector("#paymentError");
+      const renderSummary = () => {
+        const cart = OrlaFlow.get();
+        const subtotal = OrlaFlow.total(cart);
+        itemsEl.innerHTML = cart.map((item) => `<div class="summary-item"><img src="${item.img}" alt="${item.name}"><div><strong>${item.name}</strong><p style="margin:4px 0;color:#667085;">Qty: ${item.quantity || 1} | Size: ${item.size || "S"}</p><span>${OrlaFlow.money(item.price)}</span></div></div>`).join("");
+        subtotalEl.textContent = OrlaFlow.money(subtotal);
+        vatEl.textContent = OrlaFlow.money(subtotal * 0.05);
+        totalEl.textContent = OrlaFlow.money(subtotal);
+        document.querySelectorAll("[data-cart-count]").forEach((badge) => { badge.textContent = String(cart.length); });
+      };
+      renderSummary();
+      const customer = await OrlaCustomer.requireAuth();
+      if (!customer) return;
+      form.onsubmit = async (event) => {
+        event.preventDefault();
+        OrlaCustomer.showMessage(error, "");
+        const items = OrlaFlow.get();
+        if (!items.length) {
+          location = "cart.html";
+          return;
+        }
+        const button = event.submitter;
+        OrlaCustomer.setLoading(button, true, "Placing order...");
+        try {
+          const checkout = OrlaFlow.checkout();
+          const paymentMethod = new FormData(form).get("method");
+          const payload = { items, total: OrlaFlow.total(items), paymentMethod, selectedAddressId: checkout.selectedAddressId, shippingAddress: checkout.shippingAddress };
+          const data = await OrlaCustomer.api("/api/v1/customer/orders", { method: "POST", body: JSON.stringify(payload) });
+          const order = data.order || {};
+          const localOrder = { id: order.order_number || order.id, date: new Date().toISOString(), status: order.status || "processing", items, total: payload.total, payment: paymentMethod, shippingAddress: checkout.shippingAddress };
+          OrlaFlow.saveOrders([localOrder, ...OrlaFlow.orders()]);
+          OrlaFlow.saveCheckout({});
+          OrlaFlow.set([]);
+          location = "order-success.html?id=" + encodeURIComponent(localOrder.id);
+        } catch (err) {
+          OrlaCustomer.showMessage(error, err.message);
+        } finally {
+          OrlaCustomer.setLoading(button, false);
+        }
+      };
+    });
+  </script>
+</body>
+</html>

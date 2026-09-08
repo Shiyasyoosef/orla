@@ -7,22 +7,37 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
   <link rel="stylesheet" href="css/customer.css">
 </head>
 <body>
-  <div class="customer-app">
-    <header class="customer-topbar">
-      <a class="brand-word" href="index.html">OrlaTrends</a>
-      <nav class="nav-actions" aria-label="Checkout navigation">
-        <a class="ghost-btn" href="account.html">My Address Book</a>
-        <a class="ghost-btn" href="index.html">Storefront</a>
-        <button class="secondary-btn" type="button" id="logoutBtn">Logout</button>
+  <header class="store-header">
+    <div class="store-header-inner">
+      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
+      <form class="store-search" role="search"><span class="material-symbols-outlined">search</span><input type="search" placeholder="What are you looking for?" aria-label="Search products"></form>
+      <nav class="store-actions" aria-label="Store actions">
+        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
+        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
+        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
       </nav>
-    </header>
-
+    </div>
+    <nav class="store-nav" aria-label="Categories">
+      <div class="store-nav-inner">
+        <a href="index.html">New In</a>
+        <a href="index.html">Dresses</a>
+        <a href="index.html">Abayas</a>
+        <a href="index.html">Jalabiyas</a>
+        <a href="index.html">Tops & Tees</a>
+        <a href="index.html">Jeans</a>
+        <a href="index.html">Skirts</a>
+        <a href="index.html">Sports</a>
+      </div>
+    </nav>
+  </header>
+  <div class="customer-app">
     <main class="page-wrap">
       <p class="page-kicker">Checkout</p>
-      <h1 class="page-title">Delivery address</h1>
+      <div class="store-title-row"><a class="mobile-page-back" href="cart.html" aria-label="Back to bag"><span class="material-symbols-outlined">chevron_left</span></a><h1>Delivery address</h1></div>
       <p class="page-subtitle">Signed in as <strong id="checkoutCustomerName">Customer</strong>. Select a saved address or add a new one for this order.</p>
 
       <section class="checkout-layout">
@@ -94,15 +109,23 @@
 
         <aside class="panel-card">
           <h2>Order summary</h2>
-          <div class="order-line"><span>Items</span><strong>AED 519.90</strong></div>
+          <div id="checkoutSummaryItems"></div>
+          <div class="order-line"><span>Items</span><strong id="checkoutSubtotal">AED 0.00</strong></div>
           <div class="order-line"><span>Delivery</span><strong>Free</strong></div>
-          <div class="order-line"><span>VAT</span><strong>AED 24.75</strong></div>
-          <div class="order-line"><span>Total</span><strong>AED 544.65</strong></div>
+          <div class="order-line"><span>VAT estimate</span><strong id="checkoutVat">AED 0.00</strong></div>
+          <div class="order-line"><span>Total</span><strong id="checkoutTotal">AED 0.00</strong></div>
           <a id="continueToPayment" class="secondary-btn" href="payment.html" style="display:block;text-align:center;width:100%;margin-top:18px;">Continue to payment</a>
         </aside>
       </section>
     </main>
   </div>
+  <nav class="mobile-commerce-nav" aria-label="Mobile shopping navigation">
+    <a href="index.html"><span class="material-symbols-outlined">home</span></a>
+    <a href="index.html"><span class="material-symbols-outlined">category</span></a>
+    <a href="wishlist.html"><span class="material-symbols-outlined">favorite</span></a>
+    <a href="cart.html"><span class="material-symbols-outlined">shopping_bag</span><span class="mobile-commerce-badge" data-cart-count>0</span></a>
+    <a class="is-active" href="account.html"><span class="material-symbols-outlined">person</span></a>
+  </nav>
 
   <script src="js/customer-auth.js"></script>
   <script src="js/commerce-flow.js"></script>

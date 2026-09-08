@@ -7,7 +7,7 @@
   }
 
   function persistSelectedAddress() {
-    if (!window.OrlaFlow) return;
+    if (typeof OrlaFlow === "undefined") return;
     const selected = state.addresses.find((item) => String(item.addressId) === String(state.selectedAddressId));
     if (selected) OrlaFlow.saveCheckout({ selectedAddressId: state.selectedAddressId, shippingAddress: selected });
   }
@@ -31,6 +31,29 @@
       </label>
     `).join("");
     persistSelectedAddress();
+  }
+
+  function renderOrderSummary() {
+    if (typeof OrlaFlow === "undefined") return;
+    const items = OrlaFlow.get();
+    const itemsEl = document.querySelector("#checkoutSummaryItems");
+    const subtotal = OrlaFlow.total(items);
+    if (itemsEl) {
+      itemsEl.innerHTML = items.length ? items.map((item) => `
+        <div class="summary-item">
+          <img src="${OrlaCustomer.escapeHtml(item.img)}" alt="${OrlaCustomer.escapeHtml(item.name)}">
+          <div>
+            <strong>${OrlaCustomer.escapeHtml(item.name)}</strong>
+            <p style="margin:4px 0;color:#667085;">Qty: ${Number(item.quantity || 1)} | Size: ${OrlaCustomer.escapeHtml(item.size || "S")}</p>
+            <span>${OrlaFlow.money(item.price)}</span>
+          </div>
+        </div>
+      `).join("") : `<div class="empty-state">Your bag is empty. <a href="index.html">Continue shopping</a></div>`;
+    }
+    document.querySelector("#checkoutSubtotal").textContent = OrlaFlow.money(subtotal);
+    document.querySelector("#checkoutVat").textContent = OrlaFlow.money(subtotal * 0.05);
+    document.querySelector("#checkoutTotal").textContent = OrlaFlow.money(subtotal);
+    document.querySelectorAll("[data-cart-count]").forEach((badge) => { badge.textContent = String(items.length); });
   }
 
   async function loadAddresses() {
@@ -89,7 +112,8 @@
     state.customer = await OrlaCustomer.requireAuth();
     if (!state.customer) return;
     document.querySelector("#checkoutCustomerName").textContent = state.customer.fullName || state.customer.email;
-    document.querySelector("#logoutBtn").addEventListener("click", OrlaCustomer.logout);
+    renderOrderSummary();
+    document.querySelector("#logoutBtn")?.addEventListener("click", OrlaCustomer.logout);
     els.addressOptions.addEventListener("change", (event) => {
       if (event.target.name === "selectedAddress") {
         state.selectedAddressId = event.target.value;

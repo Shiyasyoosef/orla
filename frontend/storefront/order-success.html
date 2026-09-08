@@ -4,22 +4,60 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Order confirmed | OrlaTrends</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
   <link rel="stylesheet" href="css/customer.css">
 </head>
-<body>
-  <main class="page-wrap">
-    <a class="brand-word" href="index.html">OrlaTrends</a>
-    <section class="panel-card">
-      <p class="page-kicker">Order confirmed</p>
-      <h1 class="page-title">Thank you for your order</h1>
-      <p id="details" class="page-subtitle">Loading your secure order details...</p>
-      <div class="order-line">
-        <span>Tracking status</span>
-        <strong id="status">Queued</strong>
+<body class="store-page">
+  <header class="store-header">
+    <div class="store-header-inner">
+      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
+      <form class="store-search" role="search"><span class="material-symbols-outlined">search</span><input type="search" placeholder="What are you looking for?" aria-label="Search products"></form>
+      <nav class="store-actions" aria-label="Store actions">
+        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
+        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
+        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
+      </nav>
+    </div>
+    <nav class="store-nav" aria-label="Categories">
+      <div class="store-nav-inner">
+        <a href="index.html">New In</a>
+        <a href="index.html">Dresses</a>
+        <a href="index.html">Abayas</a>
+        <a href="index.html">Jalabiyas</a>
+        <a href="index.html">Tops & Tees</a>
+        <a href="index.html">Jeans</a>
+        <a href="index.html">Skirts</a>
+        <a href="index.html">Sports</a>
       </div>
-      <a class="secondary-btn" style="display:inline-block;margin-top:18px" href="orders.html">View my orders</a>
+    </nav>
+  </header>
+  <main class="store-container">
+    <nav class="crumbs"><a href="orders.html">My Orders</a><span>/</span><strong>Order Details</strong></nav>
+    <div class="toast is-visible" style="position:static;transform:none;margin:0 0 18px;width:max-content;max-width:100%;">Order received successfully</div>
+    <div class="store-title-row"><a class="mobile-page-back" href="orders.html" aria-label="Back to orders"><span class="material-symbols-outlined">chevron_left</span></a><h1>Order Details</h1></div>
+    <section class="checkout-shell">
+      <div class="commerce-panel">
+        <p class="page-kicker">Order confirmed</p>
+        <h1 class="page-title" id="orderTitle">Thank you for your order</h1>
+        <p id="details" class="page-subtitle">Loading your secure order details...</p>
+        <div id="orderItems"></div>
+      </div>
+      <aside class="commerce-panel">
+        <h2>Order Summary</h2>
+        <div class="order-line"><span>Status</span><strong id="status">Queued</strong></div>
+        <div class="order-line"><span>Payment</span><strong id="payment">Pending</strong></div>
+        <div class="order-line"><span>Total</span><strong id="total">AED 0.00</strong></div>
+        <a class="bag-btn" style="display:grid;place-items:center;text-decoration:none;" href="orders.html">View My Orders</a>
+      </aside>
     </section>
   </main>
+  <nav class="mobile-commerce-nav" aria-label="Mobile shopping navigation">
+    <a href="index.html"><span class="material-symbols-outlined">home</span></a>
+    <a href="index.html"><span class="material-symbols-outlined">category</span></a>
+    <a href="wishlist.html"><span class="material-symbols-outlined">favorite</span></a>
+    <a href="cart.html"><span class="material-symbols-outlined">shopping_bag</span><span class="mobile-commerce-badge" data-cart-count>0</span></a>
+    <a class="is-active" href="customer-login.html"><span class="material-symbols-outlined">person</span></a>
+  </nav>
   <script src="js/commerce-flow.js"></script>
   <script src="js/customer-auth.js"></script>
   <script>
@@ -27,11 +65,19 @@
       const orderId = new URLSearchParams(location.search).get("id");
       const localOrder = OrlaFlow.orders().find((item) => String(item.id) === String(orderId));
 
-      if (localOrder) {
-        document.querySelector("#details").textContent = `Order ${localOrder.id} - ${OrlaFlow.money(localOrder.total)}`;
-        document.querySelector("#status").textContent = localOrder.status || "processing";
+      function render(order) {
+        document.querySelectorAll("[data-cart-count]").forEach((badge) => { badge.textContent = String(OrlaFlow.get().length); });
+        if (!order) return;
+        const items = order.items || [];
+        document.querySelector("#orderTitle").textContent = `Order ${order.id || order.orderId}`;
+        document.querySelector("#details").textContent = `Placed on ${new Date(order.date || Date.now()).toLocaleDateString()}`;
+        document.querySelector("#status").textContent = order.status || "processing";
+        document.querySelector("#payment").textContent = order.payment || order.paymentMethod || "Pending";
+        document.querySelector("#total").textContent = OrlaFlow.money(order.total);
+        document.querySelector("#orderItems").innerHTML = items.map((item) => `<div class="summary-item"><img src="${item.img || "assets/images/products/Product1.jpg"}" alt="${item.name || "Order item"}"><div><strong>${item.name || "OrlaTrends product"}</strong><p style="margin:4px 0;color:#667085;">Qty: ${item.quantity || 1} | Size: ${item.size || "S"}</p><span>${OrlaFlow.money(item.price)}</span></div></div>`).join("");
       }
 
+      render(localOrder);
       const customer = await OrlaCustomer.requireAuth();
       if (!customer || !orderId) {
         if (!orderId) document.querySelector("#details").textContent = "Order reference is unavailable.";
@@ -41,12 +87,7 @@
       try {
         const data = await OrlaCustomer.api("/api/v1/customer/orders");
         const order = (data.orders || []).find((item) => String(item.orderId) === String(orderId) || String(item.id) === String(orderId));
-        if (!order) {
-          if (!localOrder) throw new Error("Order details are unavailable.");
-          return;
-        }
-        document.querySelector("#details").textContent = `Order ${order.orderId} - ${OrlaFlow.money(order.total)}`;
-        document.querySelector("#status").textContent = order.status || "processing";
+        if (order) render({ ...localOrder, ...order, id: order.orderId || order.id, payment: order.paymentMethod });
       } catch (error) {
         if (!localOrder) document.querySelector("#details").textContent = error.message;
       }

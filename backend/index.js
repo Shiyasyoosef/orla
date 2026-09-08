@@ -23,6 +23,18 @@ const IS_LOCAL_RUNTIME = process.env.FUNCTIONS_EMULATOR === "true" || process.en
 const ALLOW_DEFAULT_ADMIN = IS_LOCAL_RUNTIME && process.env.ALLOW_DEFAULT_ADMIN !== "false";
 const JWT_SECRET = process.env.JWT_SECRET || (IS_LOCAL_RUNTIME ? "orlatrends_local_access_secret_change_me" : "");
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || (IS_LOCAL_RUNTIME ? "orlatrends_local_refresh_secret_change_me" : "");
+const COOKIE_SECURE = !IS_LOCAL_RUNTIME;
+
+const DEFAULT_CATEGORIES = [
+  { id: "new-in", name: "New In", slug: "new-in", image_url: "assets/images/categories/Newin.png", display_order: 10 },
+  { id: "dresses", name: "Dresses", slug: "dresses", image_url: "assets/images/categories/Dresses.png", display_order: 20 },
+  { id: "abayas", name: "Abayas", slug: "abayas", image_url: "assets/images/categories/Abayas.png", display_order: 30 },
+  { id: "jalabiyas", name: "Jalabiyas", slug: "jalabiyas", image_url: "assets/images/categories/Jalabiyas.png", display_order: 40 },
+  { id: "tops-tees", name: "Tops & Tees", slug: "tops-tees", image_url: "assets/images/categories/Tops & Tees.png", display_order: 50 },
+  { id: "jeans", name: "Jeans", slug: "jeans", image_url: "assets/images/categories/Jeans.png", display_order: 60 },
+  { id: "skirts", name: "Skirts", slug: "skirts", image_url: "assets/images/categories/Skirts.png", display_order: 70 },
+  { id: "sports", name: "Sports", slug: "sports", image_url: "assets/images/categories/Sports.png", display_order: 80 }
+];
 
 const ALL_PERMISSIONS = [
   "dashboard.read", "catalog.read", "catalog.write", "orders.read", "orders.write",
@@ -34,11 +46,28 @@ const ALL_PERMISSIONS = [
 const DEFAULT_ADMIN_HASH = bcrypt.hashSync("Admin@123", 10);
 
 app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: "cross-origin" } }));
-app.use(cors({ origin: true, credentials: true }));
+const configuredOrigins = String(process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map(origin => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = new Set([
+  "https://orlatrends-6ac85.web.app",
+  "https://orlatrends-6ac85.firebaseapp.com",
+  ...configuredOrigins
+]);
+app.use(cors({
+  credentials: true,
+  origin(origin, callback) {
+    const localOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin || "");
+    if (!origin || allowedOrigins.has(origin) || (IS_LOCAL_RUNTIME && localOrigin)) return callback(null, true);
+    return callback(new Error("Origin is not allowed"));
+  }
+}));
 app.use(express.json({ limit: "8mb" }));
 app.use(express.urlencoded({ extended: true, limit: "8mb" }));
 app.use(cookieParser());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 600, standardHeaders: true, legacyHeaders: false }));
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
 
 // Prevent browser caching of API responses
 app.use((_req, res, next) => {
@@ -163,7 +192,7 @@ async function issueRefresh(adminDoc, req, rememberMe, oldHash = null) {
   try {
     if (oldHash) {
       const snaps = await db.collection("admin_sessions").where("refresh_token_hash", "==", oldHash).get();
-      snaps.forEach(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() }));
+      await Promise.all(snaps.docs.map(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() })));
     }
   } catch (_) {}
   const refreshToken = jwt.sign({ sub: adminDoc.id, nonce: crypto.randomBytes(12).toString("hex") }, REFRESH_SECRET, { expiresIn: rememberMe ? "30d" : "7d" });
@@ -209,6 +238,33 @@ function normalizeEmail(email) {
   return String(email || "").toLowerCase().trim();
 }
 
+function slugify(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function cookieOptions(maxAge) {
+  return { httpOnly: true, sameSite: "strict", secure: COOKIE_SECURE, maxAge, path: "/" };
+}
+
+function csrfRequired(req, res, next) {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+  const cookieToken = String(req.cookies?.orla_csrf || "");
+  const headerToken = String(req.get("X-CSRF-Token") || "");
+  if (!cookieToken || !headerToken) return fail(res, 403, "Security token is missing. Refresh the page and try again.");
+  const cookieBuffer = Buffer.from(cookieToken);
+  const headerBuffer = Buffer.from(headerToken);
+  if (cookieBuffer.length !== headerBuffer.length || !crypto.timingSafeEqual(cookieBuffer, headerBuffer)) {
+    return fail(res, 403, "Security token is invalid. Refresh the page and try again.");
+  }
+  next();
+}
+
 function customerResponse(customerDoc) {
   const firstName = customerDoc.first_name || customerDoc.firstName || "";
   const lastName = customerDoc.last_name || customerDoc.lastName || "";
@@ -250,16 +306,71 @@ async function findCustomerById(id) {
   return null;
 }
 
+async function syncCustomerProfile(firebaseUser, input = {}) {
+  const uid = String(firebaseUser.uid || "");
+  const email = normalizeEmail(firebaseUser.email || input.email);
+  if (!uid || !email) throw Object.assign(new Error("Firebase account is missing a UID or email"), { status: 422 });
+
+  const current = await findCustomerById(uid);
+  const submittedFirstName = String(input.firstName || input.first_name || "").trim();
+  const submittedLastName = String(input.lastName || input.last_name || "").trim();
+  const displayParts = String(firebaseUser.name || "").trim().split(/\s+/).filter(Boolean);
+  const firstName = submittedFirstName || current?.first_name || displayParts[0] || "Customer";
+  const lastName = submittedLastName || current?.last_name || displayParts.slice(1).join(" ");
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+  const phoneNumber = String(input.phoneNumber || input.phone_number || current?.phone_number || firebaseUser.phone_number || "").trim();
+  const status = current?.status || "active";
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const createdAt = current?.created_at || now;
+  const customerData = {
+    firebase_uid: uid,
+    first_name: firstName,
+    last_name: lastName,
+    full_name: fullName,
+    email,
+    phone_number: phoneNumber,
+    status,
+    auth_provider: firebaseUser.firebase?.sign_in_provider || "password",
+    email_verified: Boolean(firebaseUser.email_verified),
+    created_at: createdAt,
+    updated_at: now
+  };
+
+  const batch = db.batch();
+  batch.set(db.collection("customer_accounts").doc(uid), customerData, { merge: true });
+  batch.set(db.collection("customers").doc(uid), {
+    ...customerData,
+    group: current?.group || "General",
+    orders_count: Number(current?.orders_count || 0),
+    lifetime_sales: Number(current?.lifetime_sales || 0)
+  }, { merge: true });
+  await batch.commit();
+  return { id: uid, ...customerData };
+}
+
+async function verifyCustomerIdToken(idToken) {
+  if (!idToken) throw Object.assign(new Error("Firebase ID token is required"), { status: 401 });
+  try {
+    return await admin.auth().verifyIdToken(String(idToken), true);
+  } catch (_) {
+    throw Object.assign(new Error("Firebase session is invalid or expired"), { status: 401 });
+  }
+}
+
+async function startCustomerSession(customerDoc, req, res, rememberMe = true) {
+  const accessToken = signCustomerAccess(customerDoc);
+  const refreshToken = await issueCustomerRefresh(customerDoc, req, rememberMe);
+  setCustomerRefreshCookie(res, refreshToken, rememberMe);
+  const csrfToken = setCsrfCookie(req, res);
+  return { accessToken, csrfToken, customer: customerResponse(customerDoc) };
+}
+
 function signCustomerAccess(customerDoc) {
   return jwt.sign({ sub: customerDoc.id, email: customerDoc.email, type: "customer" }, JWT_SECRET, { expiresIn: "30m" });
 }
 
 function setCustomerRefreshCookie(res, refreshToken, rememberMe) {
-  res.cookie("orla_customer_refresh", refreshToken, {
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: (rememberMe ? 30 : 7) * 86400000
-  });
+  res.cookie("orla_customer_refresh", refreshToken, cookieOptions((rememberMe ? 30 : 7) * 86400000));
 }
 
 function setCsrfCookie(req, res) {
@@ -267,8 +378,10 @@ function setCsrfCookie(req, res) {
   const csrfToken = existing || crypto.randomBytes(24).toString("hex");
   res.cookie("orla_csrf", csrfToken, {
     httpOnly: false,
-    sameSite: "lax",
-    maxAge: 7 * 86400000
+    sameSite: "strict",
+    secure: COOKIE_SECURE,
+    maxAge: 7 * 86400000,
+    path: "/"
   });
   return csrfToken;
 }
@@ -277,7 +390,7 @@ async function issueCustomerRefresh(customerDoc, req, rememberMe, oldHash = null
   try {
     if (oldHash) {
       const snaps = await db.collection("customer_sessions").where("refresh_token_hash", "==", oldHash).get();
-      snaps.forEach(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() }));
+      await Promise.all(snaps.docs.map(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() })));
     }
   } catch (_) {}
 
@@ -324,7 +437,7 @@ async function customerAuthRequired(req, res, next) {
 
 async function getValidCustomerRefresh(req) {
   if (!JWT_SECRET || !REFRESH_SECRET) return null;
-  const refreshToken = req.cookies?.orla_customer_refresh || req.body?.refreshToken || "";
+  const refreshToken = req.cookies?.orla_customer_refresh || "";
   if (!refreshToken) return null;
 
   try {
@@ -359,13 +472,93 @@ async function clearDefaultAddress(customerId, fieldName, exceptId = null) {
   await batch.commit();
 }
 
+function normalizeCategoryStatus(value) {
+  return String(value || "active").toLowerCase() === "inactive" ? "inactive" : "active";
+}
+
+function categoryResponse(id, data = {}, productCount = 0) {
+  return {
+    id,
+    name: String(data.name || "Category"),
+    slug: String(data.slug || id),
+    parentId: data.parent_id || "",
+    parentName: data.parent_name || "Root",
+    imageUrl: data.image_url || "",
+    displayOrder: Number(data.display_order || 0),
+    status: normalizeCategoryStatus(data.status),
+    productCount: Number(productCount || data.product_count || 0)
+  };
+}
+
+async function ensureDefaultCategories() {
+  const categoriesRef = db.collection("categories");
+  const snapshot = await categoriesRef.limit(1).get();
+  if (!snapshot.empty) return;
+  const batch = db.batch();
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  DEFAULT_CATEGORIES.forEach(category => {
+    batch.set(categoriesRef.doc(category.id), {
+      name: category.name,
+      slug: category.slug,
+      parent_id: "",
+      parent_name: "Root",
+      image_url: category.image_url,
+      display_order: category.display_order,
+      status: "active",
+      created_at: now,
+      updated_at: now
+    });
+  });
+  await batch.commit();
+}
+
+async function listCategories(activeOnly = false) {
+  await ensureDefaultCategories();
+  const [categorySnapshot, productSnapshot] = await Promise.all([
+    db.collection("categories").get(),
+    db.collection("products").select("category_id", "category", "category_name").get()
+  ]);
+  const counts = new Map();
+  productSnapshot.docs.forEach(doc => {
+    const product = doc.data();
+    [product.category_id, product.category, product.category_name]
+      .filter(Boolean)
+      .forEach(key => counts.set(String(key).toLowerCase(), (counts.get(String(key).toLowerCase()) || 0) + 1));
+  });
+  return categorySnapshot.docs
+    .map(doc => {
+      const data = doc.data();
+      const count = counts.get(doc.id.toLowerCase()) || counts.get(String(data.slug || "").toLowerCase()) || counts.get(String(data.name || "").toLowerCase()) || 0;
+      return categoryResponse(doc.id, data, count);
+    })
+    .filter(category => !activeOnly || category.status === "active")
+    .sort((a, b) => a.displayOrder - b.displayOrder || a.name.localeCompare(b.name));
+}
+
+async function resolveCategory(input = {}) {
+  const categoryId = String(input.categoryId || input.category_id || "").trim();
+  const categoryName = String(input.category || input.categoryName || input.category_name || "").trim();
+  if (categoryId) {
+    const doc = await db.collection("categories").doc(categoryId).get();
+    if (!doc.exists) throw Object.assign(new Error("Selected category does not exist"), { status: 422 });
+    const category = categoryResponse(doc.id, doc.data());
+    if (category.status !== "active") throw Object.assign(new Error("Selected category is inactive"), { status: 422 });
+    return category;
+  }
+  if (categoryName) {
+    const snapshot = await db.collection("categories").where("name", "==", categoryName).limit(1).get();
+    if (!snapshot.empty) return categoryResponse(snapshot.docs[0].id, snapshot.docs[0].data());
+  }
+  throw Object.assign(new Error("A valid category is required"), { status: 422 });
+}
+
 // System Health
 app.get("/health", (req, res) => {
   ok(res, { status: "healthy", app: "OrlaTrends Admin Firebase" });
 });
 
 // Authentication Routes
-app.post("/api/auth/login", asyncHandler(async (req, res) => {
+app.post("/api/auth/login", authLimiter, asyncHandler(async (req, res) => {
   if (!authSecretsReady(res)) return;
   const email = String(req.body.email || "").toLowerCase().trim();
   const password = String(req.body.password || "");
@@ -380,10 +573,10 @@ app.post("/api/auth/login", asyncHandler(async (req, res) => {
   
   const accessToken = signAccess(adminDoc);
   const refreshToken = await issueRefresh(adminDoc, req, rememberMe);
-  res.cookie("orla_refresh", refreshToken, { httpOnly: true, sameSite: "lax", maxAge: (rememberMe ? 30 : 7) * 86400000 });
+  res.cookie("orla_refresh", refreshToken, cookieOptions((rememberMe ? 30 : 7) * 86400000));
   await logActivity(adminDoc.id, "Logged in", "Auth");
   
-  ok(res, { accessToken, refreshToken, admin: { id: adminDoc.id, email: adminDoc.email, fullName: adminDoc.full_name, role: adminDoc.role_name, permissions: adminDoc.permissions } }, "Login successful");
+  ok(res, { accessToken, admin: { id: adminDoc.id, email: adminDoc.email, fullName: adminDoc.full_name, role: adminDoc.role_name, permissions: adminDoc.permissions } }, "Login successful");
 }));
 
 app.get("/api/auth/me", authRequired, asyncHandler(async (req, res) => {
@@ -392,7 +585,7 @@ app.get("/api/auth/me", authRequired, asyncHandler(async (req, res) => {
 
 app.post("/api/auth/refresh", asyncHandler(async (req, res) => {
   if (!authSecretsReady(res)) return;
-  const refreshToken = req.cookies?.orla_refresh || req.body?.refreshToken || "";
+  const refreshToken = req.cookies?.orla_refresh || "";
   if (!refreshToken) return fail(res, 401, "Admin session expired. Please login again.");
 
   try {
@@ -410,8 +603,8 @@ app.post("/api/auth/refresh", asyncHandler(async (req, res) => {
 
     const accessToken = signAccess(adminDoc);
     const newRefresh = await issueRefresh(adminDoc, req, true, tokenHash);
-    res.cookie("orla_refresh", newRefresh, { httpOnly: true, sameSite: "lax", maxAge: 30 * 86400000 });
-    ok(res, { accessToken, refreshToken: newRefresh, admin: { id: adminDoc.id, email: adminDoc.email, fullName: adminDoc.full_name, role: adminDoc.role_name, permissions: adminDoc.permissions } }, "Session refreshed");
+    res.cookie("orla_refresh", newRefresh, cookieOptions(30 * 86400000));
+    ok(res, { accessToken, admin: { id: adminDoc.id, email: adminDoc.email, fullName: adminDoc.full_name, role: adminDoc.role_name, permissions: adminDoc.permissions } }, "Session refreshed");
   } catch (_) {
     fail(res, 401, "Admin session expired. Please login again.");
   }
@@ -419,14 +612,14 @@ app.post("/api/auth/refresh", asyncHandler(async (req, res) => {
 
 app.post("/api/auth/logout", authRequired, asyncHandler(async (req, res) => {
   try {
-    const refreshToken = req.cookies?.orla_refresh || req.body?.refreshToken || "";
+    const refreshToken = req.cookies?.orla_refresh || "";
     if (refreshToken) {
       const tokenHash = hashToken(refreshToken);
       const snaps = await db.collection("admin_sessions").where("refresh_token_hash", "==", tokenHash).get();
-      snaps.forEach(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() }));
+      await Promise.all(snaps.docs.map(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() })));
     }
   } catch (_) {}
-  res.clearCookie("orla_refresh");
+  res.clearCookie("orla_refresh", cookieOptions(0));
   await logActivity(req.admin.id, "Logged out", "Auth");
   ok(res, {}, "Logged out");
 }));
@@ -438,80 +631,42 @@ app.get("/api/security/csrf", (req, res) => {
   ok(res, { csrfToken }, "CSRF token ready");
 });
 
+app.use("/api/v1/customer", csrfRequired);
+
 // Customer Authentication Routes
-app.post("/api/v1/customer/auth/register", asyncHandler(async (req, res) => {
+app.post("/api/v1/customer/auth/register", authLimiter, asyncHandler(async (req, res) => {
   if (!authSecretsReady(res)) return;
   const firstName = String(req.body.firstName || "").trim();
   const lastName = String(req.body.lastName || "").trim();
   const email = normalizeEmail(req.body.email);
-  const password = String(req.body.password || "");
   const phoneNumber = String(req.body.phoneNumber || "").trim();
+  const decoded = await verifyCustomerIdToken(req.body.idToken);
+  const tokenEmail = normalizeEmail(decoded.email);
 
-  if (!firstName || !lastName || !email || !password) return fail(res, 422, "First name, last name, email and password are required");
+  if (!firstName || !lastName || !email) return fail(res, 422, "First name, last name and email are required");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(res, 422, "Enter a valid email address");
-  if (password.length < 8 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) {
-    return fail(res, 422, "Password must be at least 8 characters and include uppercase, lowercase and a number");
-  }
+  if (!tokenEmail || tokenEmail !== email) return fail(res, 403, "Firebase account email does not match the registration form");
 
   const existing = await findCustomerByEmail(email);
-  if (existing) return fail(res, 409, "An account already exists with this email");
+  if (existing && existing.id !== decoded.uid) {
+    return fail(res, 409, "This email is linked to another customer profile. Contact support to migrate it.");
+  }
 
-  const fullName = [firstName, lastName].join(" ");
-  const passwordHash = await bcrypt.hash(password, 10);
-  const customerData = {
-    first_name: firstName,
-    last_name: lastName,
-    full_name: fullName,
-    email,
-    phone_number: phoneNumber,
-    password_hash: passwordHash,
-    status: "active",
-    created_at: admin.firestore.FieldValue.serverTimestamp(),
-    updated_at: admin.firestore.FieldValue.serverTimestamp()
-  };
-
-  const ref = await db.collection("customer_accounts").add(customerData);
-  await db.collection("customers").doc(ref.id).set({
-    first_name: firstName,
-    last_name: lastName,
-    full_name: fullName,
-    email,
-    phone_number: phoneNumber,
-    status: "active",
-    created_at: admin.firestore.FieldValue.serverTimestamp(),
-    updated_at: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
-
-  const customerDoc = { id: ref.id, ...customerData };
-  const accessToken = signCustomerAccess(customerDoc);
-  const refreshToken = await issueCustomerRefresh(customerDoc, req, true);
-  setCustomerRefreshCookie(res, refreshToken, true);
-  const csrfToken = setCsrfCookie(req, res);
-
-  ok(res, { accessToken, refreshToken, csrfToken, customer: customerResponse(customerDoc) }, "Account created");
+  const customerDoc = await syncCustomerProfile(decoded, { firstName, lastName, email, phoneNumber });
+  const session = await startCustomerSession(customerDoc, req, res, true);
+  ok(res, session, "Account created");
 }));
 
-app.post("/api/v1/customer/auth/login", asyncHandler(async (req, res) => {
+app.post("/api/v1/customer/auth/login", authLimiter, asyncHandler(async (req, res) => {
   if (!authSecretsReady(res)) return;
-  const email = normalizeEmail(req.body.email);
-  const password = String(req.body.password || "");
   const rememberMe = Boolean(req.body.rememberMe);
-
-  if (!email || !password) return fail(res, 422, "Email and password are required");
-
-  const customerDoc = await findCustomerByEmail(email);
-  if (!customerDoc) return fail(res, 401, "Invalid email or password");
-
-  const valid = await bcrypt.compare(password, customerDoc.password_hash || "");
-  if (!valid) return fail(res, 401, "Invalid email or password");
+  const decoded = await verifyCustomerIdToken(req.body.idToken);
+  let customerDoc = await findCustomerById(decoded.uid);
+  if (!customerDoc) customerDoc = await syncCustomerProfile(decoded);
   if (customerDoc.status === "inactive") return fail(res, 403, "Customer account is not active");
 
-  const accessToken = signCustomerAccess(customerDoc);
-  const refreshToken = await issueCustomerRefresh(customerDoc, req, rememberMe);
-  setCustomerRefreshCookie(res, refreshToken, rememberMe);
-  const csrfToken = setCsrfCookie(req, res);
-
-  ok(res, { accessToken, refreshToken, csrfToken, customer: customerResponse(customerDoc) }, "Login successful");
+  const session = await startCustomerSession(customerDoc, req, res, rememberMe);
+  ok(res, session, "Login successful");
 }));
 
 app.post("/api/v1/customer/auth/refresh", asyncHandler(async (req, res) => {
@@ -524,7 +679,7 @@ app.post("/api/v1/customer/auth/refresh", asyncHandler(async (req, res) => {
   setCustomerRefreshCookie(res, refreshToken, true);
   const csrfToken = setCsrfCookie(req, res);
 
-  ok(res, { accessToken, refreshToken, csrfToken, customer: customerResponse(session.customerDoc) }, "Session refreshed");
+  ok(res, { accessToken, csrfToken, customer: customerResponse(session.customerDoc) }, "Session refreshed");
 }));
 
 app.get("/api/v1/customer/auth/me", customerAuthRequired, asyncHandler(async (req, res) => {
@@ -538,11 +693,11 @@ app.post("/api/v1/customer/auth/logout", customerAuthRequired, asyncHandler(asyn
     if (refreshToken) {
       const tokenHash = hashToken(refreshToken);
       const snaps = await db.collection("customer_sessions").where("refresh_token_hash", "==", tokenHash).get();
-      snaps.forEach(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() }));
+      await Promise.all(snaps.docs.map(doc => doc.ref.update({ revoked_at: admin.firestore.FieldValue.serverTimestamp() })));
     }
   } catch (_) {}
 
-  res.clearCookie("orla_customer_refresh");
+  res.clearCookie("orla_customer_refresh", cookieOptions(0));
   ok(res, {}, "Logged out");
 }));
 
@@ -633,30 +788,33 @@ app.delete("/api/v1/customer/addresses/:addressId", customerAuthRequired, asyncH
 }));
 
 // Storefront Product & Checkout Routes
+app.get("/api/storefront/categories", asyncHandler(async (_req, res) => {
+  const rows = await listCategories(true);
+  ok(res, { rows, categories: rows });
+}));
+
 app.get("/api/storefront/products", asyncHandler(async (_req, res) => {
-  let rows = [];
-  try {
-    const snap = await db.collection("products").where("status", "in", ["Enabled", "enabled", "active", true]).limit(100).get();
-    rows = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (_) {}
+  const snap = await db.collection("products").limit(100).get();
+  const enabledStatuses = new Set(["enabled", "active", "true"]);
+  const rows = snap.docs
+    .map(doc => ({ id: doc.id, ...doc.data() }))
+    .filter(product => enabledStatuses.has(String(product.status ?? "enabled").toLowerCase()));
   ok(res, { rows, products: rows });
 }));
 
 app.get("/api/storefront/products/:slug", asyncHandler(async (req, res) => {
   const slug = String(req.params.slug || "").toLowerCase().trim();
   let product = null;
-  try {
-    const direct = await db.collection("products").doc(slug).get();
-    if (direct.exists) product = { id: direct.id, ...direct.data() };
-    if (!product) {
-      const snap = await db.collection("products").where("slug", "==", slug).limit(1).get();
-      if (!snap.empty) product = { id: snap.docs[0].id, ...snap.docs[0].data() };
-    }
-    if (!product) {
-      const skuSnap = await db.collection("products").where("sku", "==", slug).limit(1).get();
-      if (!skuSnap.empty) product = { id: skuSnap.docs[0].id, ...skuSnap.docs[0].data() };
-    }
-  } catch (_) {}
+  const direct = await db.collection("products").doc(slug).get();
+  if (direct.exists) product = { id: direct.id, ...direct.data() };
+  if (!product) {
+    const snap = await db.collection("products").where("slug", "==", slug).limit(1).get();
+    if (!snap.empty) product = { id: snap.docs[0].id, ...snap.docs[0].data() };
+  }
+  if (!product) {
+    const skuSnap = await db.collection("products").where("sku", "==", slug).limit(1).get();
+    if (!skuSnap.empty) product = { id: skuSnap.docs[0].id, ...skuSnap.docs[0].data() };
+  }
   if (!product) return fail(res, 404, "Product not found");
   ok(res, { product });
 }));
@@ -714,46 +872,149 @@ app.get("/api/dashboard/overview", authRequired, requirePermission("dashboard.re
 }));
 
 // Catalog & Products Routes
-app.get("/api/products", authRequired, requirePermission("catalog.read"), asyncHandler(async (req, res) => {
-  let rows = [];
-  try {
-    const snap = await db.collection("products").get();
-    rows = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (_) {}
-  if (!rows.length) {
-    rows = [
-      { id: "prod_1", name: "Premium Modest Abaya", sku: "SKU-AB-101", price: 249, stock: 15, category: "Abayas" },
-      { id: "prod_2", name: "Sabrina Luxury Maxi Dress", sku: "SKU-DR-204", price: 569, stock: 8, category: "Dresses" },
-      { id: "prod_3", name: "Silk Embroidered Jalabiya", sku: "SKU-JL-309", price: 399, stock: 12, category: "Jalabiyas" },
-      { id: "prod_4", name: "Classic Tailored Shirt", sku: "SKU-SH-412", price: 189, stock: 22, category: "Shirts" }
-    ];
+app.get("/api/categories", authRequired, requirePermission("catalog.read"), asyncHandler(async (_req, res) => {
+  const rows = await listCategories(false);
+  ok(res, { rows, pagination: { page: 1, limit: rows.length || 1, total: rows.length, pages: 1 } });
+}));
+
+app.post("/api/categories", authRequired, requirePermission("catalog.write"), asyncHandler(async (req, res) => {
+  const name = String(req.body.name || "").trim();
+  const slug = slugify(req.body.slug || name);
+  const parentId = String(req.body.parentId || req.body.parent_id || "").trim();
+  const status = normalizeCategoryStatus(req.body.status);
+  if (!name || !slug) return fail(res, 422, "Category name is required");
+
+  const categoryRef = db.collection("categories").doc(slug);
+  if ((await categoryRef.get()).exists) return fail(res, 409, "A category with this name or slug already exists");
+
+  let parentName = "Root";
+  if (parentId) {
+    const parentDoc = await db.collection("categories").doc(parentId).get();
+    if (!parentDoc.exists) return fail(res, 422, "Parent category does not exist");
+    if (parentId === slug) return fail(res, 422, "A category cannot be its own parent");
+    parentName = String(parentDoc.data().name || "Root");
   }
+
+  const data = {
+    name,
+    slug,
+    parent_id: parentId,
+    parent_name: parentName,
+    image_url: String(req.body.imageUrl || req.body.image_url || "").trim(),
+    display_order: Number(req.body.displayOrder ?? req.body.display_order ?? 100),
+    status,
+    created_at: admin.firestore.FieldValue.serverTimestamp(),
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  };
+  await categoryRef.create(data);
+  await logActivity(req.admin.id, "Created category " + name, "Catalog");
+  ok(res, categoryResponse(slug, data), "Category created");
+}));
+
+app.put("/api/categories/:id", authRequired, requirePermission("catalog.write"), asyncHandler(async (req, res) => {
+  const categoryRef = db.collection("categories").doc(req.params.id);
+  const existingDoc = await categoryRef.get();
+  if (!existingDoc.exists) return fail(res, 404, "Category not found");
+
+  const name = String(req.body.name || existingDoc.data().name || "").trim();
+  const parentId = String(req.body.parentId ?? req.body.parent_id ?? existingDoc.data().parent_id ?? "").trim();
+  if (!name) return fail(res, 422, "Category name is required");
+  if (parentId === req.params.id) return fail(res, 422, "A category cannot be its own parent");
+
+  let parentName = "Root";
+  if (parentId) {
+    const parentDoc = await db.collection("categories").doc(parentId).get();
+    if (!parentDoc.exists) return fail(res, 422, "Parent category does not exist");
+    parentName = String(parentDoc.data().name || "Root");
+  }
+
+  const data = {
+    name,
+    parent_id: parentId,
+    parent_name: parentName,
+    image_url: String(req.body.imageUrl ?? req.body.image_url ?? existingDoc.data().image_url ?? "").trim(),
+    display_order: Number(req.body.displayOrder ?? req.body.display_order ?? existingDoc.data().display_order ?? 100),
+    status: normalizeCategoryStatus(req.body.status ?? existingDoc.data().status),
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  };
+  await categoryRef.update(data);
+  await logActivity(req.admin.id, "Updated category " + name, "Catalog");
+  ok(res, categoryResponse(req.params.id, { ...existingDoc.data(), ...data }), "Category updated");
+}));
+
+app.delete("/api/categories/:id", authRequired, requirePermission("catalog.write"), asyncHandler(async (req, res) => {
+  const categoryRef = db.collection("categories").doc(req.params.id);
+  const existingDoc = await categoryRef.get();
+  if (!existingDoc.exists) return fail(res, 404, "Category not found");
+  const [productRefs, childRefs] = await Promise.all([
+    db.collection("products").where("category_id", "==", req.params.id).limit(1).get(),
+    db.collection("categories").where("parent_id", "==", req.params.id).limit(1).get()
+  ]);
+  if (!productRefs.empty) return fail(res, 409, "Move products out of this category before deleting it");
+  if (!childRefs.empty) return fail(res, 409, "Move or delete child categories first");
+  await categoryRef.delete();
+  await logActivity(req.admin.id, "Deleted category " + (existingDoc.data().name || req.params.id), "Catalog");
+  ok(res, { id: req.params.id }, "Category deleted");
+}));
+
+app.get("/api/products", authRequired, requirePermission("catalog.read"), asyncHandler(async (req, res) => {
+  const snap = await db.collection("products").get();
+  const rows = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   ok(res, { rows, pagination: { page: 1, limit: rows.length || 1, total: rows.length, pages: 1 } });
 }));
 
 app.post("/api/products", authRequired, requirePermission("catalog.write"), asyncHandler(async (req, res) => {
-  const data = { ...req.body, created_at: admin.firestore.FieldValue.serverTimestamp() };
-  let refId = "prod_" + Date.now();
-  try {
-    const ref = await db.collection("products").add(data);
-    refId = ref.id;
-  } catch (_) {}
+  const category = await resolveCategory(req.body);
+  const name = String(req.body.name || "").trim();
+  const sku = String(req.body.sku || "").trim().toUpperCase();
+  const price = Number(req.body.price);
+  const stock = Math.max(0, Number(req.body.stock ?? req.body.qty ?? 0));
+  if (!name || !sku) return fail(res, 422, "Product name and SKU are required");
+  if (!Number.isFinite(price) || price < 0) return fail(res, 422, "Product price must be a valid positive number");
+  if (!Number.isFinite(stock)) return fail(res, 422, "Product stock must be a valid number");
+  if ((await db.collection("products").where("sku", "==", sku).limit(1).get()).size) {
+    return fail(res, 409, "A product with this SKU already exists");
+  }
+  const data = {
+    name,
+    sku,
+    slug: slugify(req.body.slug || name),
+    description: String(req.body.description || "").trim(),
+    price,
+    stock,
+    qty: stock,
+    type: String(req.body.type || "Simple Product"),
+    status: String(req.body.status || "Enabled"),
+    image_url: String(req.body.imageUrl || req.body.image_url || "").trim(),
+    category_id: category.id,
+    category: category.name,
+    category_name: category.name,
+    created_at: admin.firestore.FieldValue.serverTimestamp(),
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  };
+  delete data.categoryId;
+  const ref = await db.collection("products").add(data);
+  const refId = ref.id;
   await logActivity(req.admin.id, `Created product ${refId}`, "Catalog");
   ok(res, { id: refId, ...data }, "Product created");
 }));
 
 app.put("/api/products/:id", authRequired, requirePermission("catalog.write"), asyncHandler(async (req, res) => {
-  try {
-    await db.collection("products").doc(req.params.id).update({ ...req.body, updated_at: admin.firestore.FieldValue.serverTimestamp() });
-  } catch (_) {}
+  const updateData = { ...req.body, updated_at: admin.firestore.FieldValue.serverTimestamp() };
+  if (req.body.categoryId || req.body.category_id || req.body.category || req.body.categoryName) {
+    const category = await resolveCategory(req.body);
+    updateData.category_id = category.id;
+    updateData.category = category.name;
+    updateData.category_name = category.name;
+    delete updateData.categoryId;
+  }
+  await db.collection("products").doc(req.params.id).update(updateData);
   await logActivity(req.admin.id, `Updated product ${req.params.id}`, "Catalog");
   ok(res, { id: req.params.id }, "Product updated");
 }));
 
 app.delete("/api/products/:id", authRequired, requirePermission("catalog.write"), asyncHandler(async (req, res) => {
-  try {
-    await db.collection("products").doc(req.params.id).delete();
-  } catch (_) {}
+  await db.collection("products").doc(req.params.id).delete();
   await logActivity(req.admin.id, `Deleted product ${req.params.id}`, "Catalog");
   ok(res, { id: req.params.id }, "Product deleted");
 }));
@@ -807,18 +1068,8 @@ app.put("/api/orders/:id", authRequired, requirePermission("orders.write"), asyn
 
 // Customers Routes
 app.get("/api/customers", authRequired, requirePermission("customers.read"), asyncHandler(async (req, res) => {
-  let rows = [];
-  try {
-    const snap = await db.collection("customers").get();
-    rows = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (_) {}
-  if (!rows.length) {
-    rows = [
-      { id: "cust_1", full_name: "Fatima Al-Mansoori", email: "fatima@example.com", phone: "+971 50 111 2233", country: "United Arab Emirates" },
-      { id: "cust_2", full_name: "Maryam Al-Zaabi", email: "maryam@example.com", phone: "+971 55 444 5566", country: "United Arab Emirates" },
-      { id: "cust_3", full_name: "Noura Al-Shehhi", email: "noura@example.com", phone: "+966 50 777 8899", country: "Saudi Arabia" }
-    ];
-  }
+  const snap = await db.collection("customers").get();
+  const rows = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   ok(res, { rows, pagination: { page: 1, limit: rows.length || 1, total: rows.length, pages: 1 } });
 }));
 
@@ -1020,25 +1271,15 @@ app.get("/api/logs", authRequired, requirePermission("logs.read"), asyncHandler(
   });
 }));
 
-// Express 5 compatible catch-all router for unhandled /api requests
-app.use("/api", authRequired, asyncHandler(async (req, res) => {
-  const colName = req.path.replace(/^\//, "").split("/")[0].replace(/[^a-zA-Z0-9_-]/g, "");
-  if (!colName) return fail(res, 400, "Invalid route");
-  if (["admins", "customer_accounts", "admin_sessions", "customer_sessions"].includes(colName)) {
-    return fail(res, 403, "This collection is not available through the generic API");
-  }
-  let rows = [];
-  try {
-    const snap = await db.collection(colName).limit(100).get();
-    rows = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (_) {}
-  ok(res, { rows, pagination: { page: 1, limit: 100, total: rows.length, pages: 1 } });
-}));
+// Never map request paths directly to Firestore collection names.
+app.use("/api", (_req, res) => fail(res, 404, "API route not found"));
 
 // Global error handler
 app.use((err, _req, res, _next) => {
   console.error(err);
-  fail(res, 500, err.message || "Server error");
+  const status = Number(err.status || err.statusCode || 500);
+  const message = status < 500 || IS_LOCAL_RUNTIME ? (err.message || "Request failed") : "Server error";
+  fail(res, status, message);
 });
 
 exports.api = functions.runWith({ secrets: ["JWT_SECRET", "REFRESH_TOKEN_SECRET"] }).https.onRequest(app);

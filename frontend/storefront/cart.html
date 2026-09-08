@@ -1,1 +1,113 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cart | OrlaTrends</title><link rel="stylesheet" href="css/customer.css"></head><body><main class="page-wrap"><a class="brand-word" href="index.html">OrlaTrends</a><p class="page-kicker">Shopping bag</p><h1 class="page-title">Your Cart</h1><section class="checkout-layout"><div class="checkout-card"><div id="cartRows"></div></div><aside class="panel-card"><h2>Order summary</h2><div class="order-line"><span>Subtotal</span><strong id="total"></strong></div><div class="order-line"><span>Delivery</span><strong>Free</strong></div><a class="secondary-btn" style="display:block;text-align:center;margin-top:18px" href="checkout.html">Checkout</a></aside></section></main><script src="js/commerce-flow.js"></script><script>const render=()=>{let a=OrlaFlow.get(),r=document.querySelector('#cartRows');r.innerHTML=a.length?a.map((x,i)=>`<div class="order-line"><span><strong>${x.name||"Product"}</strong><br>${OrlaFlow.money(x.price)} × <input aria-label="Quantity" data-q="${i}" type="number" min="1" value="${x.quantity||1}" style="width:58px"></span><button class="ghost-btn" data-r="${i}">Remove</button></div>`).join(''):'<div class="empty-state">Your cart is empty. <a href="index.html">Continue shopping</a></div>';document.querySelector('#total').textContent=OrlaFlow.money(OrlaFlow.total(a));document.querySelectorAll('[data-q]').forEach(e=>e.onchange=()=>{a[e.dataset.q].quantity=Math.max(1,+e.value||1);OrlaFlow.set(a);render()});document.querySelectorAll('[data-r]').forEach(e=>e.onclick=()=>{a.splice(e.dataset.r,1);OrlaFlow.set(a);render()})};render()</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shopping Bag | OrlaTrends</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body class="store-page cart-page">
+  <header class="store-header">
+    <div class="store-header-inner">
+      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
+      <form class="store-search" role="search"><span class="material-symbols-outlined">search</span><input type="search" placeholder="What are you looking for?" aria-label="Search products"></form>
+      <nav class="store-actions" aria-label="Store actions">
+        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
+        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
+        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
+      </nav>
+    </div>
+    <nav class="store-nav" aria-label="Categories">
+      <div class="store-nav-inner">
+        <a href="index.html">New In</a>
+        <a href="index.html">Dresses</a>
+        <a href="index.html">Abayas</a>
+        <a href="index.html">Jalabiyas</a>
+        <a href="index.html">Tops & Tees</a>
+        <a href="index.html">Jeans</a>
+        <a href="index.html">Skirts</a>
+        <a href="index.html">Sports</a>
+      </div>
+    </nav>
+  </header>
+  <main class="store-container">
+    <nav class="crumbs"><a href="index.html">Home</a><span>/</span><strong>Shopping Bag</strong></nav>
+    <div class="store-title-row"><a class="mobile-page-back" href="index.html" aria-label="Back to home"><span class="material-symbols-outlined">chevron_left</span></a><h1>Shopping Bag <small id="cartCount">- 0 items</small></h1></div>
+    <section class="checkout-shell">
+      <div class="commerce-panel" id="cartRows"></div>
+      <aside class="commerce-panel">
+        <h2>Order Summary</h2>
+        <div class="order-line"><span>Subtotal</span><strong id="subtotal">AED 0.00</strong></div>
+        <div class="order-line"><span>Delivery</span><strong>Free</strong></div>
+        <div class="order-line"><span>VAT estimate</span><strong id="vat">AED 0.00</strong></div>
+        <div class="order-line"><span>Total</span><strong id="total">AED 0.00</strong></div>
+        <a class="bag-btn" style="display:grid;place-items:center;text-decoration:none;" href="checkout.html">Checkout</a>
+      </aside>
+    </section>
+  </main>
+  <div class="mobile-cart-cta" aria-label="Mobile checkout bar">
+    <strong id="mobileCartTotal">AED 0.00</strong>
+    <a href="checkout.html">Checkout</a>
+  </div>
+  <nav class="mobile-commerce-nav" aria-label="Mobile shopping navigation">
+    <a href="index.html"><span class="material-symbols-outlined">home</span></a>
+    <a href="index.html"><span class="material-symbols-outlined">category</span></a>
+    <a href="wishlist.html"><span class="material-symbols-outlined">favorite</span></a>
+    <a class="is-active" href="cart.html"><span class="material-symbols-outlined">shopping_bag</span><span class="mobile-commerce-badge" data-cart-count>0</span></a>
+    <a href="customer-login.html"><span class="material-symbols-outlined">person</span></a>
+  </nav>
+  <footer class="store-footer"><div class="store-footer-inner"><section><h2>Shop</h2><a href="index.html">New Arrivals</a><a href="wishlist.html">Wishlist</a></section><section><h2>Account</h2><a href="account.html">My Account</a><a href="orders.html">Orders</a></section><section><h2>Service</h2><a href="mailto:info@orlatrends.com">Contact Us</a><a href="checkout.html">Shipping</a></section><section><h2>OrlaTrends</h2><p>Premium fashion shopping for UAE customers.</p></section></div></footer>
+  <script src="js/commerce-flow.js"></script>
+  <script>
+    function renderCart() {
+      const items = OrlaFlow.get();
+      const rows = document.querySelector("#cartRows");
+      document.querySelector("#cartCount").textContent = `- ${items.length} ${items.length === 1 ? "item" : "items"}`;
+      if (!items.length) {
+        rows.innerHTML = '<div class="empty-shop"><div><h2>Your bag is empty</h2><p><a href="index.html">Continue shopping</a></p></div></div>';
+      } else {
+        rows.innerHTML = items.map((item, index) => `
+          <div class="summary-item">
+            <img src="${item.img}" alt="${item.name}">
+            <div>
+              <h3 style="margin:0 0 4px;">${item.brand || "OrlaTrends"}</h3>
+              <p style="margin:0 0 8px;color:#667085;">${item.name}</p>
+              <strong>${OrlaFlow.money(item.price)}</strong>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+                <label>Qty <input data-qty="${index}" type="number" min="1" value="${item.quantity || 1}" style="width:64px;padding:8px;border:1px solid #d8dde4;border-radius:8px;"></label>
+                <span>Size: <strong>${item.size || "S"}</strong></span>
+                <button class="pill-btn" data-wish="${index}" type="button">Move to Wishlist</button>
+                <button class="pill-btn danger" data-remove="${index}" type="button">Remove</button>
+              </div>
+            </div>
+          </div>
+        `).join("");
+      }
+      const subtotal = OrlaFlow.total(items);
+      document.querySelector("#subtotal").textContent = OrlaFlow.money(subtotal);
+      document.querySelector("#vat").textContent = OrlaFlow.money(subtotal * 0.05);
+      document.querySelector("#total").textContent = OrlaFlow.money(subtotal);
+      document.querySelector("#mobileCartTotal").textContent = OrlaFlow.money(subtotal);
+      document.querySelectorAll("[data-cart-count]").forEach((badge) => { badge.textContent = String(items.length); });
+      document.querySelectorAll("[data-qty]").forEach((input) => input.addEventListener("change", () => {
+        items[input.dataset.qty].quantity = Math.max(1, Number(input.value) || 1);
+        OrlaFlow.set(items);
+        renderCart();
+      }));
+      document.querySelectorAll("[data-remove]").forEach((button) => button.addEventListener("click", () => {
+        items.splice(Number(button.dataset.remove), 1);
+        OrlaFlow.set(items);
+        renderCart();
+      }));
+      document.querySelectorAll("[data-wish]").forEach((button) => button.addEventListener("click", () => {
+        OrlaFlow.toggleWishlist(items[Number(button.dataset.wish)]);
+        items.splice(Number(button.dataset.wish), 1);
+        OrlaFlow.set(items);
+        renderCart();
+      }));
+    }
+    renderCart();
+  </script>
+</body>
+</html>

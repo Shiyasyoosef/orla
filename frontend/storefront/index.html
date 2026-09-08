@@ -404,6 +404,17 @@
       overflow: visible;
       box-shadow: none;
       scroll-snap-align: start;
+      color: #111827;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .category-name {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
     }
 
     .cat-img-wrap {
@@ -422,6 +433,15 @@
       height: 100%;
       object-fit: contain;
       object-position: center;
+    }
+
+    .category-name {
+      display: block;
+      margin-top: 8px;
+      color: #111827;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
     }
 
     .promo-grid {
@@ -1907,14 +1927,14 @@
       </form>
 
       <div class="header-actions">
-        <a href="#" class="action-link account-link" aria-label="Account">
+        <a href="customer-login.html" class="action-link account-link" aria-label="Account">
           <span class="material-symbols-outlined">account_circle</span>
           <span class="desktop-only">Sign In</span>
         </a>
-        <a href="#" class="action-link wishlist-link" aria-label="Wishlist">
+        <a href="wishlist.html" class="action-link wishlist-link" aria-label="Wishlist">
           <span class="material-symbols-outlined">favorite</span>
         </a>
-        <a href="#" class="action-link cart-link" aria-label="Cart">
+        <a href="cart.html" class="action-link cart-link" aria-label="Cart">
           <span class="material-symbols-outlined">shopping_cart_checkout</span>
         </a>
       </div>
@@ -1923,7 +1943,7 @@
 
   <nav class="site-nav" aria-label="Main navigation">
     <div class="nav-window">
-      <ul class="nav-list">
+      <ul class="nav-list" id="storefrontCategoryNav">
         <li><a href="#">Kurta Sets</a></li>
         <li><a href="#">Dresses</a></li>
         <li><a href="#">Sarees</a></li>
@@ -1979,7 +1999,7 @@
       </div>
 
       <div class="category-scroll" id="categoryScroll">
-        <div class="category-row">
+        <div class="category-row" id="storefrontCategoryGrid">
           <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Newin.png" alt="New In"></div></a>
           <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Dresses.png" alt="Dresses"></div></a>
           <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Abayas.png" alt="Abayas"></div></a>
@@ -2028,8 +2048,8 @@
     <a href="#" class="bottom-link is-active"><span class="material-symbols-outlined">home</span><span>Home</span></a>
     <a href="#" class="bottom-link"><span class="material-symbols-outlined">category</span><span>Categories</span></a>
     <a href="#" class="bottom-link"><span class="material-symbols-outlined">sell</span><span>Sale</span></a>
-    <a href="#" class="bottom-link"><span class="material-symbols-outlined">account_circle</span><span>Account</span></a>
-    <a href="#" class="bottom-link"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
+    <a href="customer-login.html" class="bottom-link"><span class="material-symbols-outlined">account_circle</span><span>Account</span></a>
+    <a href="cart.html" class="bottom-link"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
   </nav>
 
   <footer class="site-footer">
@@ -2209,12 +2229,17 @@
     <span class="material-symbols-outlined">arrow_upward</span>
   </button>
 
+  <script src="js/commerce-flow.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const extensions = ["avif", "webp", "jpg", "jpeg", "png", "gif", "svg"];
 
       function loadImage(img, baseName) {
         if (!baseName) return;
+        if (/^https?:\/\//i.test(baseName)) {
+          img.src = baseName;
+          return;
+        }
         let clean = baseName.replace(/^\/?(assets\/)?/, "assets/");
         const hasExtension = /\.[a-z0-9]+$/i.test(clean);
         
@@ -2241,7 +2266,58 @@
         tryNext();
       }
 
-        
+      function renderStorefrontCategories(categories) {
+        const nav = document.querySelector("#storefrontCategoryNav");
+        const grid = document.querySelector("#storefrontCategoryGrid");
+        if (!nav || !grid || !Array.isArray(categories) || !categories.length) return;
+
+        const makeLink = (category, className = "") => {
+          const link = document.createElement("a");
+          link.href = `index.html?category=${encodeURIComponent(category.slug || category.id)}`;
+          link.className = className;
+          link.dataset.categoryId = category.id;
+          return link;
+        };
+
+        nav.replaceChildren(...categories.slice(0, 10).map(category => {
+          const item = document.createElement("li");
+          const link = makeLink(category);
+          link.textContent = category.name;
+          item.appendChild(link);
+          return item;
+        }));
+
+        grid.replaceChildren(...categories.map(category => {
+          const link = makeLink(category, "category-item");
+          const imageWrap = document.createElement("div");
+          imageWrap.className = "cat-img-wrap";
+          const image = document.createElement("img");
+          image.alt = category.name;
+          image.loading = "lazy";
+          image.dataset.img = category.imageUrl || "assets/images/categories/Newin.png";
+          const label = document.createElement("span");
+          label.className = "category-name";
+          label.textContent = category.name;
+          imageWrap.appendChild(image);
+          link.append(imageWrap, label);
+          loadImage(image, image.dataset.img);
+          return link;
+        }));
+      }
+
+      async function loadStorefrontCategories() {
+        try {
+          const response = await fetch("/api/storefront/categories", { cache: "no-store" });
+          const payload = await response.json();
+          if (!response.ok || payload.success === false) throw new Error(payload.message || "Category request failed");
+          renderStorefrontCategories(payload.data?.categories || payload.data?.rows || []);
+        } catch (error) {
+          console.warn("Storefront categories could not be synchronized", error);
+        }
+      }
+
+      loadStorefrontCategories();
+      window.setInterval(loadStorefrontCategories, 30000);
 
       const products = [
         { id: "product1", img: "assets/images/products/Product1.jpg", title: "Premium Modest Dress", price: "569", old: "699", rating: "4.8 (18)" },
@@ -2288,11 +2364,20 @@
               <div class="delivery-info">Free delivery</div>
             </div>
           </a>
-          <button class="heart-btn" type="button" aria-label="Add to wishlist">
+          <button class="heart-btn ${typeof OrlaFlow !== "undefined" && OrlaFlow.isWishlisted(product.id) ? "is-active" : ""}" type="button" aria-label="Add to wishlist" data-wishlist-id="${product.id}">
             <span class="material-symbols-outlined">favorite</span>
           </button>
         </article>
       `).join("");
+
+      productGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-wishlist-id]");
+        if (!button || typeof OrlaFlow === "undefined") return;
+        const product = products.find((item) => item.id === button.dataset.wishlistId);
+        if (!product) return;
+        const result = OrlaFlow.toggleWishlist({ ...product, name: product.title, brand: "OrlaTrends", size: "S" });
+        button.classList.toggle("is-active", result.added);
+      });
 
       document.querySelectorAll("img[data-img]").forEach((img) => {
         loadImage(img, img.dataset.img);

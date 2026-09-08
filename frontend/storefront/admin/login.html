@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/admin/css/style.css?v=20260907_center1" />
+  <link rel="stylesheet" href="/admin/css/style.css?v=20260907_center2" />
 </head>
 <body class="admin-auth-page">
   <main class="admin-auth-shell">
@@ -38,7 +38,6 @@
   </main>
   <script>
     const TOKEN_KEY = "orlaAdminAccessToken";
-    const REFRESH_KEY = "orlaAdminRefreshToken";
     const ADMIN_KEY = "orlaAdminProfile";
     const API_BASE = window.ORLA_API_BASE || "";
     function showError(message) {
@@ -67,7 +66,6 @@
         if (!response.ok || payload.success === false) throw new Error(payload.message || "Login failed");
         const data = payload.data || {};
         localStorage.setItem(TOKEN_KEY, data.accessToken || "");
-        localStorage.setItem(REFRESH_KEY, data.refreshToken || "");
         localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin || {}));
         location.href = "/admin";
       } catch (err) {

@@ -1,4 +1,4 @@
-(function () {
+ï»¿(function () {
   const state = { addresses: [], editingId: null };
   const els = {};
 
@@ -26,7 +26,7 @@
     }
     els.grid.innerHTML = state.addresses.map((address) => `
       <article class="address-card ${address.isDefaultShipping ? "is-default" : ""}" data-address-id="${address.addressId}">
-        <span class="badge">${OrlaCustomer.escapeHtml(address.addressType || "Home")}${address.isDefaultShipping ? " · Default shipping" : ""}</span>
+        <span class="badge">${OrlaCustomer.escapeHtml(address.addressType || "Home")}${address.isDefaultShipping ? " ï¿½ Default shipping" : ""}</span>
         <h3>${OrlaCustomer.escapeHtml(address.fullName)}</h3>
         <p>${OrlaCustomer.escapeHtml(address.phoneNumber)}</p>
         <p>${OrlaCustomer.escapeHtml(addressLine(address))}</p>
@@ -97,7 +97,7 @@
     const customer = await OrlaCustomer.requireAuth();
     if (!customer) return;
     document.querySelector("#customerName").textContent = customer.fullName || `${customer.firstName} ${customer.lastName}`.trim() || "My Account";
-    document.querySelector("#logoutBtn").addEventListener("click", OrlaCustomer.logout);
+    document.querySelector("#logoutBtn")?.addEventListener("click", OrlaCustomer.logout);
     document.querySelector("#addAddressBtn").addEventListener("click", () => { resetForm(); setModal(true); });
     document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => setModal(false)));
     els.form.addEventListener("submit", saveAddress);

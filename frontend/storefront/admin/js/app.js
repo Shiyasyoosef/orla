@@ -42,16 +42,7 @@ const DB = {
     { id: 107, sku: 'APL-IPHONE-17PRO', name: 'Apple iPhone 17 Pro 256GB Titanium', type: 'Configurable Product', price: 4299.00, qty: 4, status: 'Enabled', category: 'Smartphones' },
     { id: 108, sku: 'DY-V15-DETECT', name: 'Dyson V15 Detect Absolute Vacuum', type: 'Simple Product', price: 2899.00, qty: 24, status: 'Enabled', category: 'Appliances' }
   ],
-  categories: [
-    { id: 1, name: 'Default Category', parent: 'Root', count: 850, status: 'Active' },
-    { id: 2, name: 'Electronics', parent: 'Default Category', count: 420, status: 'Active' },
-    { id: 3, name: 'Smartphones & Tablets', parent: 'Electronics', count: 180, status: 'Active' },
-    { id: 4, name: 'Laptops & Computers', parent: 'Electronics', count: 110, status: 'Active' },
-    { id: 5, name: 'Audio & Headphones', parent: 'Electronics', count: 130, status: 'Active' },
-    { id: 6, name: 'Fashion & Apparel', parent: 'Default Category', count: 310, status: 'Active' },
-    { id: 7, name: 'Footwear', parent: 'Fashion & Apparel', count: 140, status: 'Active' },
-    { id: 8, name: 'Home & Living', parent: 'Default Category', count: 120, status: 'Active' }
-  ],
+  categories: [],
   customers: [
     { id: 501, name: 'Ahmed Mohammed', email: 'ahmed.m@emirates.ae', group: 'General', phone: '+971 50 123 4567', orders: 14, sales: 24890.00, status: 'Active' },
     { id: 502, name: 'Sarah Wilson', email: 's.wilson@dubaiholding.com', group: 'VIP Customer', phone: '+971 55 987 6543', orders: 8, sales: 11240.00, status: 'Active' },
@@ -99,7 +90,6 @@ function getAdminToken() {
 
 function setAdminSession(data) {
   if (data.accessToken) localStorage.setItem(TOKEN_KEY, data.accessToken);
-  if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
   if (data.admin) localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
 }
 
@@ -123,6 +113,33 @@ function asDate(value) {
 function normalizeStatus(value, fallback = "Active") {
   const raw = String(value || fallback).toLowerCase();
   return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
+}
+
+function normalizeCategory(row) {
+  return {
+    id: String(row.id || row.slug || ""),
+    name: row.name || "Category",
+    slug: row.slug || row.id || "",
+    parentId: row.parentId || row.parent_id || "",
+    parent: row.parentName || row.parent_name || "Root",
+    imageUrl: row.imageUrl || row.image_url || "",
+    displayOrder: Number(row.displayOrder ?? row.display_order ?? 100),
+    count: Number(row.productCount ?? row.product_count ?? row.count ?? 0),
+    status: normalizeStatus(row.status || "Active")
+  };
+}
+
+function renderCategoryOptions(selected = "", includeAll = false, excludeId = "") {
+  const options = DB.categories
+    .filter(category => category.id !== excludeId && category.status === "Active")
+    .sort((a, b) => a.displayOrder - b.displayOrder || a.name.localeCompare(b.name))
+    .map(category => `<option value="${escapeHtml(category.id)}" ${String(selected) === category.id ? "selected" : ""}>${escapeHtml(category.name)}</option>`)
+    .join("");
+  return `${includeAll ? '<option value="">All Categories</option>' : '<option value="">Select category</option>'}${options}`;
 }
 
 function normalizeOrder(row) {
@@ -150,6 +167,7 @@ function normalizeProduct(row) {
     price: toMoney(row.price),
     qty: Number(row.qty || row.stock || row.quantity || 0),
     status: normalizeStatus(row.status || "Enabled", "Enabled"),
+    categoryId: row.category_id || row.categoryId || "",
     category: row.category || row.category_name || "Catalog"
   };
 }
@@ -185,12 +203,11 @@ window.api = api;
 
 async function refreshAdminSession() {
   try {
-    const refreshToken = localStorage.getItem(REFRESH_KEY) || "";
     const response = await fetch(`${API_BASE}/api/auth/refresh`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken })
+      body: "{}"
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || payload.success === false) throw new Error(payload.message || "Refresh failed");
@@ -226,12 +243,17 @@ async function requireAdmin() {
 async function loadLiveData() {
   const loaders = [
     api("/api/orders/advanced").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.orders = data.rows.map(normalizeOrder); }),
-    api("/api/products").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.products = data.rows.map(normalizeProduct); }),
-    api("/api/customers").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.customers = data.rows.map(normalizeCustomer); }),
-    api("/api/cms-pages").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.cmsPages = data.rows.map(row => ({ id: row.id, title: row.title || row.name || "Page", urlKey: row.urlKey || row.slug || row.id, layout: row.layout || "1 Column", status: normalizeStatus(row.status || "Enabled", "Enabled"), updated: asDate(row.updated_at || row.updated) })); }),
-    api("/api/inventory").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.products = data.rows.map(row => normalizeProduct({ ...row, name: row.product_name || row.name, qty: row.stock })); })
+    api("/api/products").then(data => { if (Array.isArray(data.rows)) DB.products = data.rows.map(normalizeProduct); }),
+    api("/api/categories").then(data => { if (Array.isArray(data.rows)) DB.categories = data.rows.map(normalizeCategory); }),
+    api("/api/customers").then(data => { if (Array.isArray(data.rows)) DB.customers = data.rows.map(normalizeCustomer); }),
+    api("/api/cms-pages").then(data => { if (Array.isArray(data.rows) && data.rows.length) DB.cmsPages = data.rows.map(row => ({ id: row.id, title: row.title || row.name || "Page", urlKey: row.urlKey || row.slug || row.id, layout: row.layout || "1 Column", status: normalizeStatus(row.status || "Enabled", "Enabled"), updated: asDate(row.updated_at || row.updated) })); })
   ];
-  await Promise.allSettled(loaders);
+  const results = await Promise.allSettled(loaders);
+  const failed = results.filter(result => result.status === "rejected");
+  if (failed.length) {
+    console.error("Admin data synchronization failed", failed.map(result => result.reason));
+    showToast(`${failed.length} admin data source${failed.length === 1 ? "" : "s"} could not be loaded`, "danger");
+  }
   bootstrapped = true;
 }
 
@@ -1007,12 +1029,7 @@ function renderProductsView() {
                  value="${State.products.search}" oninput="setFilter('products', 'search', this.value)">
           
           <select class="filter-select" onchange="setFilter('products', 'category', this.value)">
-            <option value="">All Categories</option>
-            <option value="Audio" ${State.products.category === 'Audio' ? 'selected' : ''}>Audio</option>
-            <option value="Smartphones" ${State.products.category === 'Smartphones' ? 'selected' : ''}>Smartphones</option>
-            <option value="Laptops" ${State.products.category === 'Laptops' ? 'selected' : ''}>Laptops</option>
-            <option value="Footwear" ${State.products.category === 'Footwear' ? 'selected' : ''}>Footwear</option>
-            <option value="Appliances" ${State.products.category === 'Appliances' ? 'selected' : ''}>Appliances</option>
+            ${renderCategoryOptions(State.products.category, true)}
           </select>
 
           <select class="filter-select" onchange="setFilter('products', 'status', this.value)">
@@ -1042,7 +1059,8 @@ function renderProductsTableOnly() {
     list = list.filter(p => p.sku.toLowerCase().includes(q) || p.name.toLowerCase().includes(q));
   }
   if (State.products.category) {
-    list = list.filter(p => p.category === State.products.category);
+    const selectedCategory = DB.categories.find(category => category.id === State.products.category);
+    list = list.filter(p => p.categoryId === State.products.category || p.category === selectedCategory?.name);
   }
   if (State.products.status) {
     list = list.filter(p => p.status === State.products.status);
@@ -1091,11 +1109,11 @@ function renderProductsTableOnly() {
         ${list.map(p => `
           <tr>
             <td><input type="checkbox"></td>
-            <td>${p.id}</td>
+            <td>${escapeHtml(p.id)}</td>
             <td><div style="width:36px; height:36px; background:#e2e8f0; border-radius:4px; display:flex; align-items:center; justify-content:center;"><i data-lucide="image" style="width:16px; color:#94a3b8;"></i></div></td>
-            <td style="font-weight:600;">${p.name}</td>
-            <td><span class="badge badge-neutral">${p.category}</span></td>
-            <td><code>${p.sku}</code></td>
+            <td style="font-weight:600;">${escapeHtml(p.name)}</td>
+            <td><span class="badge badge-neutral">${escapeHtml(p.category)}</span></td>
+            <td><code>${escapeHtml(p.sku)}</code></td>
             <td style="font-weight:700;">AED ${p.price.toFixed(2)}</td>
             <td style="color:${p.qty < 10 ? 'var(--danger)' : '#10b981'}; font-weight:700;">${p.qty}</td>
             <td><span class="badge badge-success">${p.status}</span></td>
@@ -1148,12 +1166,8 @@ function renderProductFormView() {
         </div>
         <div class="form-group">
           <label class="form-label">Category</label>
-          <select class="form-control" id="prodCategory">
-            <option value="Audio">Audio</option>
-            <option value="Smartphones">Smartphones</option>
-            <option value="Laptops">Laptops</option>
-            <option value="Footwear">Footwear</option>
-            <option value="Appliances">Appliances</option>
+          <select class="form-control" id="prodCategory" required>
+            ${renderCategoryOptions()}
           </select>
         </div>
       </div>
@@ -1169,7 +1183,7 @@ function renderCategoriesView() {
         <div class="breadcrumbs"><a href="#/dashboard">Dashboard</a> / <span>Catalog</span> / <span>Categories</span></div>
         <h2 style="font-size:18px; font-weight:700;">Category Tree & Management</h2>
       </div>
-      <button class="btn btn-primary" onclick="showToast('Add Subcategory Modal')"><i data-lucide="plus"></i> Add Subcategory</button>
+      <button class="btn btn-primary" onclick="openCategoryModal()"><i data-lucide="plus"></i> Add Category</button>
     </div>
 
     <div class="table-container">
@@ -1234,18 +1248,104 @@ function renderCategoriesTableOnly() {
         ${list.map(c => `
           <tr>
             <td><input type="checkbox"></td>
-            <td>${c.id}</td>
-            <td style="font-weight:600;"><i data-lucide="folder" style="width:14px; vertical-align:middle; margin-right:4px;"></i> ${c.name}</td>
-            <td>${c.parent}</td>
+            <td>${escapeHtml(c.id)}</td>
+            <td style="font-weight:600;"><i data-lucide="folder" style="width:14px; vertical-align:middle; margin-right:4px;"></i> ${escapeHtml(c.name)}</td>
+            <td>${escapeHtml(c.parent)}</td>
             <td style="font-weight:700;">${c.count} items</td>
-            <td><span class="badge badge-success">${c.status}</span></td>
-            <td><button class="btn btn-secondary btn-sm" onclick="showToast('Editing ${c.name}')">Edit</button></td>
+            <td><span class="badge badge-${c.status === 'Active' ? 'success' : 'neutral'}">${escapeHtml(c.status)}</span></td>
+            <td style="display:flex; gap:6px;"><button class="btn btn-secondary btn-sm" onclick="openCategoryModal('${escapeHtml(c.id)}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteCategory('${escapeHtml(c.id)}')">Delete</button></td>
           </tr>
         `).join('')}
       </tbody>
     </table>
   `;
   if (window.lucide) lucide.createIcons();
+}
+
+function openCategoryModal(categoryId = "") {
+  const category = DB.categories.find(item => item.id === categoryId) || null;
+  const overlay = document.getElementById("appModalOverlay");
+  document.getElementById("modalTitle").textContent = category ? "Edit Category" : "Add Category";
+  document.getElementById("modalBody").innerHTML = `
+    <div class="form-grid">
+      <div class="form-group full-width">
+        <label class="form-label" for="categoryName">Category Name <span class="required">*</span></label>
+        <input class="form-control" id="categoryName" value="${escapeHtml(category?.name || "")}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="categorySlug">URL Slug</label>
+        <input class="form-control" id="categorySlug" value="${escapeHtml(category?.slug || "")}" ${category ? "disabled" : ""} placeholder="auto-generated-from-name">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="categoryParent">Parent Category</label>
+        <select class="form-control" id="categoryParent">${renderCategoryOptions(category?.parentId || "", false, category?.id || "")}</select>
+      </div>
+      <div class="form-group full-width">
+        <label class="form-label" for="categoryImage">Storefront Image URL</label>
+        <input class="form-control" id="categoryImage" value="${escapeHtml(category?.imageUrl || "")}" placeholder="assets/images/categories/example.png">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="categoryOrder">Display Order</label>
+        <input class="form-control" id="categoryOrder" type="number" min="0" value="${category?.displayOrder ?? 100}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="categoryStatus">Status</label>
+        <select class="form-control" id="categoryStatus">
+          <option value="active" ${category?.status !== "Inactive" ? "selected" : ""}>Active</option>
+          <option value="inactive" ${category?.status === "Inactive" ? "selected" : ""}>Inactive</option>
+        </select>
+      </div>
+    </div>`;
+  document.getElementById("modalFooter").innerHTML = `
+    <button class="btn btn-secondary" onclick="closeModalDirect()">Cancel</button>
+    <button class="btn btn-primary" id="saveCategoryButton" onclick="saveCategory('${escapeHtml(categoryId)}')">Save Category</button>`;
+  overlay.style.display = "flex";
+  document.getElementById("categoryName")?.focus();
+}
+
+async function saveCategory(categoryId = "") {
+  const button = document.getElementById("saveCategoryButton");
+  const payload = {
+    name: document.getElementById("categoryName")?.value.trim(),
+    slug: document.getElementById("categorySlug")?.value.trim(),
+    parentId: document.getElementById("categoryParent")?.value || "",
+    imageUrl: document.getElementById("categoryImage")?.value.trim() || "",
+    displayOrder: Number(document.getElementById("categoryOrder")?.value || 100),
+    status: document.getElementById("categoryStatus")?.value || "active"
+  };
+  if (!payload.name) return showToast("Category name is required", "danger");
+  button.disabled = true;
+  try {
+    const saved = await api(categoryId ? `/api/categories/${encodeURIComponent(categoryId)}` : "/api/categories", {
+      method: categoryId ? "PUT" : "POST",
+      body: JSON.stringify(payload)
+    });
+    const normalized = normalizeCategory(saved);
+    const index = DB.categories.findIndex(item => item.id === normalized.id);
+    if (index >= 0) DB.categories[index] = normalized;
+    else DB.categories.push(normalized);
+    closeModalDirect();
+    document.getElementById("mainContent").innerHTML = renderCategoriesView();
+    renderCategoriesTableOnly();
+    showToast(`Category "${normalized.name}" saved`);
+  } catch (error) {
+    showToast(error.message || "Category save failed", "danger");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function deleteCategory(categoryId) {
+  const category = DB.categories.find(item => item.id === categoryId);
+  if (!category || !window.confirm(`Delete category "${category.name}"?`)) return;
+  try {
+    await api(`/api/categories/${encodeURIComponent(categoryId)}`, { method: "DELETE" });
+    DB.categories = DB.categories.filter(item => item.id !== categoryId);
+    renderCategoriesTableOnly();
+    showToast(`Category "${category.name}" deleted`);
+  } catch (error) {
+    showToast(error.message || "Category delete failed", "danger");
+  }
 }
 
 /* ==========================================================
@@ -1350,11 +1450,11 @@ function renderCustomersTableOnly() {
         ${list.map(c => `
           <tr>
             <td><input type="checkbox"></td>
-            <td>${c.id}</td>
-            <td style="font-weight:600;">${c.name}</td>
-            <td><a href="mailto:${c.email}" style="color:var(--primary); text-decoration:none;">${c.email}</a></td>
-            <td><span class="badge badge-info">${c.group}</span></td>
-            <td>${c.phone}</td>
+            <td>${escapeHtml(c.id)}</td>
+            <td style="font-weight:600;">${escapeHtml(c.name)}</td>
+            <td><a href="mailto:${encodeURIComponent(c.email)}" style="color:var(--primary); text-decoration:none;">${escapeHtml(c.email)}</a></td>
+            <td><span class="badge badge-info">${escapeHtml(c.group)}</span></td>
+            <td>${escapeHtml(c.phone)}</td>
             <td style="font-weight:700;">${c.orders}</td>
             <td style="font-weight:700;">AED ${c.sales.toFixed(2)}</td>
             <td><span class="badge badge-${c.status === 'Active' ? 'success' : 'neutral'}">${c.status}</span></td>
@@ -1914,7 +2014,7 @@ function flushCacheFast() {
 
 async function handleLogout() {
   try {
-    await api('/api/auth/logout', { method: 'POST', body: JSON.stringify({ refreshToken: localStorage.getItem(REFRESH_KEY) || '' }) }, false);
+    await api('/api/auth/logout', { method: 'POST', body: '{}' }, false);
   } catch (_) {}
   clearAdminSession();
   location.href = '/admin/login.html';
@@ -1929,17 +2029,17 @@ async function saveNewProduct() {
   const sku = skuInput.value;
   const price = parseFloat(document.getElementById('prodPrice').value) || 0;
   const qty = parseInt(document.getElementById('prodQty').value) || 0;
-  const category = document.getElementById('prodCategory').value;
+  const categoryId = document.getElementById('prodCategory').value;
 
-  if (!name || !sku) {
-    alert('Please fill in required fields: Name and SKU');
+  if (!name || !sku || !categoryId) {
+    alert('Please fill in required fields: Name, SKU and Category');
     return;
   }
 
   try {
     const saved = await api('/api/products', {
       method: 'POST',
-      body: JSON.stringify({ name, sku, price, stock: qty, qty, type: 'Simple Product', status: 'Enabled', category })
+      body: JSON.stringify({ name, sku, price, stock: qty, qty, type: 'Simple Product', status: 'Enabled', categoryId })
     });
     DB.products.unshift(normalizeProduct(saved));
     showToast(`Product "${name}" successfully saved.`);

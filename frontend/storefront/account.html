@@ -7,22 +7,37 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
   <link rel="stylesheet" href="css/customer.css">
 </head>
 <body>
-  <div class="customer-app">
-    <header class="customer-topbar">
-      <a class="brand-word" href="index.html">OrlaTrends</a>
-      <nav class="nav-actions" aria-label="Account navigation">
-        <a class="ghost-btn" href="index.html">Storefront</a>
-        <a class="ghost-btn" href="checkout.html">Checkout</a>
-        <button class="secondary-btn" type="button" id="logoutBtn">Logout</button>
+  <header class="store-header">
+    <div class="store-header-inner">
+      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
+      <form class="store-search" role="search"><span class="material-symbols-outlined">search</span><input type="search" placeholder="What are you looking for?" aria-label="Search products"></form>
+      <nav class="store-actions" aria-label="Store actions">
+        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
+        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
+        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
       </nav>
-    </header>
-
+    </div>
+    <nav class="store-nav" aria-label="Categories">
+      <div class="store-nav-inner">
+        <a href="index.html">New In</a>
+        <a href="index.html">Dresses</a>
+        <a href="index.html">Abayas</a>
+        <a href="index.html">Jalabiyas</a>
+        <a href="index.html">Tops & Tees</a>
+        <a href="index.html">Jeans</a>
+        <a href="index.html">Skirts</a>
+        <a href="index.html">Sports</a>
+      </div>
+    </nav>
+  </header>
+  <div class="customer-app">
     <main class="page-wrap">
       <p class="page-kicker">My Account</p>
-      <h1 class="page-title">Address Book</h1>
+      <div class="store-title-row"><a class="mobile-page-back" href="index.html" aria-label="Back to home"><span class="material-symbols-outlined">chevron_left</span></a><h1>Address Book</h1></div>
       <p class="page-subtitle">Welcome, <strong id="customerName">Customer</strong>. Manage home, office and other delivery addresses without adding address friction during signup.</p>
 
       <div class="toolbar">
@@ -101,6 +116,13 @@
       </form>
     </section>
   </div>
+  <nav class="mobile-commerce-nav" aria-label="Mobile shopping navigation">
+    <a href="index.html"><span class="material-symbols-outlined">home</span></a>
+    <a href="index.html"><span class="material-symbols-outlined">category</span></a>
+    <a href="wishlist.html"><span class="material-symbols-outlined">favorite</span></a>
+    <a href="cart.html"><span class="material-symbols-outlined">shopping_bag</span></a>
+    <a class="is-active" href="customer-login.html"><span class="material-symbols-outlined">person</span></a>
+  </nav>
 
   <script src="js/customer-auth.js"></script>
   <script src="js/customer-addresses.js"></script>

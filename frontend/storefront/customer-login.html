@@ -72,8 +72,8 @@
         const form = event.currentTarget;
         const data = OrlaCustomer.formToObject(form);
         data.rememberMe = form.rememberMe.checked;
-        const response = await OrlaCustomer.api("/api/v1/customer/auth/login", { method: "POST", body: JSON.stringify(data) }, false);
-        OrlaCustomer.setSession(response);
+        data.rememberMe = Boolean(event.currentTarget.rememberMe?.checked);
+        await OrlaCustomer.login(data);
         window.location.href = next;
       } catch (err) {
         OrlaCustomer.showMessage(error, err.message);

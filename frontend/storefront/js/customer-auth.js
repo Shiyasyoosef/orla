@@ -3,6 +3,42 @@
   const TOKEN_KEY = "orlaCustomerAccessToken";
   const CUSTOMER_KEY = "orlaCustomerProfile";
   let csrfToken = "";
+  let firebaseClientPromise = null;
+
+  function authErrorMessage(error) {
+    const messages = {
+      "auth/email-already-in-use": "An account already exists with this email",
+      "auth/invalid-email": "Enter a valid email address",
+      "auth/weak-password": "Password must be at least 8 characters",
+      "auth/invalid-credential": "Invalid email or password",
+      "auth/user-disabled": "This customer account is disabled",
+      "auth/too-many-requests": "Too many attempts. Please wait and try again",
+      "auth/network-request-failed": "Network error. Check your connection and try again"
+    };
+    return messages[error?.code] || error?.message || "Authentication failed";
+  }
+
+  async function getFirebaseClient() {
+    if (firebaseClientPromise) return firebaseClientPromise;
+    firebaseClientPromise = (async () => {
+      const [appSdk, authSdk] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js")
+      ]);
+      let config = window.ORLA_FIREBASE_CONFIG || null;
+      if (!config) {
+        const configResponse = await fetch("/__/firebase/init.json", { cache: "no-store" });
+        if (!configResponse.ok) throw new Error("Firebase web configuration is unavailable");
+        config = await configResponse.json();
+      }
+      const firebaseApp = appSdk.getApps().length ? appSdk.getApp() : appSdk.initializeApp(config);
+      return { auth: authSdk.getAuth(firebaseApp), ...authSdk };
+    })().catch((error) => {
+      firebaseClientPromise = null;
+      throw error;
+    });
+    return firebaseClientPromise;
+  }
 
   function getAccessToken() { return localStorage.getItem(TOKEN_KEY) || ""; }
   function readCsrfFromCookie() {
@@ -63,6 +99,47 @@
     rememberCsrf(payload.data || {});
     return payload.data || {};
   }
+  async function register(data) {
+    const firebase = await getFirebaseClient();
+    try {
+      await firebase.setPersistence(firebase.auth, firebase.browserLocalPersistence);
+      const credential = await firebase.createUserWithEmailAndPassword(firebase.auth, String(data.email || "").trim(), String(data.password || ""));
+      const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ").trim();
+      if (fullName) await firebase.updateProfile(credential.user, { displayName: fullName });
+      const idToken = await credential.user.getIdToken(true);
+      const response = await api("/api/v1/customer/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          idToken,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: credential.user.email,
+          phoneNumber: data.phoneNumber || ""
+        })
+      }, false);
+      setSession(response);
+      return response;
+    } catch (error) {
+      throw new Error(authErrorMessage(error));
+    }
+  }
+  async function login(data) {
+    const firebase = await getFirebaseClient();
+    try {
+      const persistence = data.rememberMe ? firebase.browserLocalPersistence : firebase.browserSessionPersistence;
+      await firebase.setPersistence(firebase.auth, persistence);
+      const credential = await firebase.signInWithEmailAndPassword(firebase.auth, String(data.email || "").trim(), String(data.password || ""));
+      const idToken = await credential.user.getIdToken(true);
+      const response = await api("/api/v1/customer/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ idToken, rememberMe: Boolean(data.rememberMe) })
+      }, false);
+      setSession(response);
+      return response;
+    } catch (error) {
+      throw new Error(authErrorMessage(error));
+    }
+  }
   async function refresh() {
     try {
       const headers = { "Content-Type": "application/json" };
@@ -98,6 +175,10 @@
   }
   async function logout() {
     try { await api("/api/v1/customer/auth/logout", { method: "POST", body: "{}" }); } catch (_) {}
+    try {
+      const firebase = await getFirebaseClient();
+      await firebase.signOut(firebase.auth);
+    } catch (_) {}
     clearSession();
     window.location.href = "customer-login.html";
   }
@@ -118,5 +199,5 @@
     }
   }
 
-  window.OrlaCustomer = { api, refresh, requireAuth, logout, setSession, clearSession, getCustomer, getAccessToken, escapeHtml, formToObject, showMessage, setLoading };
+  window.OrlaCustomer = { api, register, login, refresh, requireAuth, logout, setSession, clearSession, getCustomer, getAccessToken, escapeHtml, formToObject, showMessage, setLoading };
 })();

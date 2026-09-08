@@ -1,1 +1,66 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Orders | OrlaTrends</title><link rel="stylesheet" href="css/customer.css"></head><body><main class="page-wrap"><a class="brand-word" href="index.html">OrlaTrends</a><p class="page-kicker">Account</p><h1 class="page-title">My Orders</h1><section id="orders" class="checkout-card"></section></main><script src="js/commerce-flow.js"></script><script>let a=OrlaFlow.orders(),r=document.querySelector('#orders');r.innerHTML=a.length?a.map(o=>`<div class="order-line"><span><strong>${o.id}</strong><br>${new Date(o.date).toLocaleDateString()} · ${o.items.length} item(s)</span><span><strong>${OrlaFlow.money(o.total)}</strong><br><span class="badge">${o.status}</span></span></div>`).join(''):'<div class="empty-state">No orders yet. <a href="index.html">Start shopping</a></div>'</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>My Orders | OrlaTrends</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body class="store-page">
+  <header class="store-header">
+    <div class="store-header-inner">
+      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
+      <form class="store-search" role="search"><span class="material-symbols-outlined">search</span><input type="search" placeholder="What are you looking for?" aria-label="Search products"></form>
+      <nav class="store-actions" aria-label="Store actions">
+        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
+        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
+        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
+      </nav>
+    </div>
+    <nav class="store-nav" aria-label="Categories">
+      <div class="store-nav-inner">
+        <a href="index.html">New In</a>
+        <a href="index.html">Dresses</a>
+        <a href="index.html">Abayas</a>
+        <a href="index.html">Jalabiyas</a>
+        <a href="index.html">Tops & Tees</a>
+        <a href="index.html">Jeans</a>
+        <a href="index.html">Skirts</a>
+        <a href="index.html">Sports</a>
+      </div>
+    </nav>
+  </header>
+  <main class="store-container">
+    <nav class="crumbs"><a href="index.html">Home</a><span>/</span><strong>My Orders</strong></nav>
+    <div class="store-title-row"><a class="mobile-page-back" href="account.html" aria-label="Back to account"><span class="material-symbols-outlined">chevron_left</span></a><h1>My Orders</h1><a class="pill-btn" style="display:grid;place-items:center;text-decoration:none;" href="account.html">My Account</a></div>
+    <section id="orders" class="commerce-panel"></section>
+  </main>
+  <nav class="mobile-commerce-nav" aria-label="Mobile shopping navigation">
+    <a href="index.html"><span class="material-symbols-outlined">home</span></a>
+    <a href="index.html"><span class="material-symbols-outlined">category</span></a>
+    <a href="wishlist.html"><span class="material-symbols-outlined">favorite</span></a>
+    <a href="cart.html"><span class="material-symbols-outlined">shopping_bag</span><span class="mobile-commerce-badge" data-cart-count>0</span></a>
+    <a class="is-active" href="customer-login.html"><span class="material-symbols-outlined">person</span></a>
+  </nav>
+  <script src="js/commerce-flow.js"></script>
+  <script>
+    const orders = OrlaFlow.orders();
+    const root = document.querySelector("#orders");
+    root.innerHTML = orders.length ? orders.map((order) => {
+      const item = (order.items || [])[0] || {};
+      return `<div class="summary-item">
+        <img src="${item.img || "assets/images/products/Product1.jpg"}" alt="${item.name || "Order item"}">
+        <div>
+          <h2 style="margin:0 0 6px;">Order ${order.id}</h2>
+          <p style="margin:0 0 10px;color:#667085;">Placed on ${new Date(order.date).toLocaleDateString()} | ${(order.items || []).length} item(s)</p>
+          <strong>${OrlaFlow.money(order.total)}</strong>
+          <p><span class="badge">${order.status || "processing"}</span></p>
+          <a class="pill-btn" style="display:inline-grid;place-items:center;text-decoration:none;" href="order-success.html?id=${encodeURIComponent(order.id)}">View details</a>
+        </div>
+      </div>`;
+    }).join("") : '<div class="empty-shop"><div><h2>No orders yet</h2><p><a href="index.html">Start shopping</a></p></div></div>';
+    document.querySelectorAll("[data-cart-count]").forEach((badge) => { badge.textContent = String(OrlaFlow.get().length); });
+  </script>
+</body>
+</html>
