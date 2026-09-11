@@ -1,17 +1,11 @@
 (function () {
   const state = {
-    editing: false,
-    selected: new Set(),
     drawerProduct: null,
     drawerSize: "S"
   };
 
   const grid = document.querySelector("#wishlistGrid");
   const count = document.querySelector("#wishlistCount");
-  const editBtn = document.querySelector("#editWishlist");
-  const cancelBtn = document.querySelector("#cancelEdit");
-  const deleteBtn = document.querySelector("#deleteSelected");
-  const shareBtn = document.querySelector("#shareSelected");
   const drawer = document.querySelector("#sizeDrawer");
   const backdrop = document.querySelector("#drawerBackdrop");
   const drawerProduct = document.querySelector("#drawerProduct");
@@ -37,34 +31,106 @@
   }
 
   function syncActions(items) {
-    count.textContent = `- ${items.length} ${items.length === 1 ? "item" : "items"}`;
-    document.querySelectorAll("[data-cart-count]").forEach((badge) => {
-      badge.textContent = String(OrlaFlow.get().length);
-    });
-    editBtn.hidden = state.editing;
-    cancelBtn.hidden = !state.editing;
-    deleteBtn.hidden = !state.editing;
-    shareBtn.hidden = !state.editing;
-    deleteBtn.disabled = state.selected.size === 0;
-    shareBtn.disabled = state.selected.size === 0;
+    count.textContent = `${items.length} ${items.length === 1 ? "item" : "items"}`;
   }
 
-  function itemTemplate(item) {
-    const selected = state.selected.has(String(item.id));
+  function productUrl(item) {
+    return `product.html?id=${encodeURIComponent(item.id)}`;
+  }
+
+  function salePercent(item) {
+    const oldPrice = Number(item.old || 0);
+    const price = Number(item.price || 0);
+    if (!oldPrice || !price || oldPrice <= price) return "";
+    return `-${Math.round(((oldPrice - price) / oldPrice) * 100)}%`;
+  }
+
+  function recommendationCard(item, index) {
+    const percent = salePercent(item);
     return `
-      <article class="shop-card" data-id="${escapeHtml(item.id)}">
-        ${state.editing ? `<input class="card-check" type="checkbox" aria-label="Select ${escapeHtml(item.name)}" ${selected ? "checked" : ""}>` : ""}
-        <a class="shop-card-media" href="product.html?id=${encodeURIComponent(item.id)}">
+      <article class="wishlist-reco-card">
+        <a class="wishlist-reco-media" href="${productUrl(item)}" aria-label="View ${escapeHtml(item.name)}">
+          <span class="wishlist-card-label">${index % 2 ? "PREMIUM" : "MOST WISHLISTED"}</span>
+          <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}" loading="lazy">
+          ${item.rating ? `<span class="wishlist-rating">&#9733; ${escapeHtml(item.rating)}</span>` : ""}
+        </a>
+        <div class="wishlist-reco-body">
+          <div class="wishlist-reco-title">
+            <a href="${productUrl(item)}">${escapeHtml(item.brand || "OrlaTrends")}</a>
+            <button class="wishlist-mini-heart" type="button" data-save-reco="${escapeHtml(item.id)}" aria-label="Save ${escapeHtml(item.name)}">
+              <span class="material-symbols-outlined">favorite</span>
+            </button>
+          </div>
+          <p>${escapeHtml(item.name)}</p>
+          <div class="wishlist-price-row">
+            <strong>${OrlaFlow.money(item.price).replace(".00", "")}</strong>
+            ${item.old ? `<del>${OrlaFlow.money(item.old).replace("AED ", "").replace(".00", "")}</del>` : ""}
+            ${percent ? `<span>${percent}</span>` : ""}
+          </div>
+          <span class="wishlist-delivery">${index % 2 ? "TODAY" : "TOMORROW"}</span>
+          <small>Free delivery</small>
+        </div>
+      </article>
+    `;
+  }
+
+  function sectionTemplate(title, items) {
+    return `
+      <section class="wishlist-reco-section" aria-label="${escapeHtml(title)}">
+        <div class="wishlist-section-head">
+          <h2>${escapeHtml(title)}</h2>
+          <a href="index.html">SEE ALL</a>
+        </div>
+        <div class="wishlist-reco-row">
+          ${items.map(recommendationCard).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function emptyTemplate() {
+    const lowPrice = OrlaFlow.defaultProducts.slice(4, 8).map(OrlaFlow.normalizeProduct);
+    const recommended = OrlaFlow.defaultProducts.slice(7, 12).map(OrlaFlow.normalizeProduct);
+    return `
+      <div class="wishlist-empty-state">
+        <h2>Your wishlist is empty.</h2>
+        <p>Tap the heart to save your favorites</p>
+        <a class="wishlist-continue" href="index.html">Continue Shopping</a>
+      </div>
+      ${sectionTemplate("Lowest price of the year", lowPrice)}
+      ${sectionTemplate("Recommended for You", recommended)}
+    `;
+  }
+
+  function wishlistItemTemplate(item) {
+    const percent = salePercent(item);
+    return `
+      <article class="wishlist-item-card" data-id="${escapeHtml(item.id)}">
+        <a class="wishlist-item-media" href="${productUrl(item)}" aria-label="View ${escapeHtml(item.name)}">
           <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}" loading="lazy">
         </a>
-        <button class="card-heart is-active" type="button" aria-label="Remove ${escapeHtml(item.name)} from wishlist">
-          <span class="material-symbols-outlined">favorite</span>
-        </button>
-        <div class="shop-card-body">
-          <h3>${escapeHtml(item.brand || "OrlaTrends")}</h3>
-          <p>${escapeHtml(item.name)}</p>
-          <strong class="shop-price">${OrlaFlow.money(item.price)}</strong>
-          <button class="bag-btn" type="button" data-add-bag>Add to Bag</button>
+        <div class="wishlist-item-body">
+          <div class="wishlist-item-title">
+            <a href="${productUrl(item)}">${escapeHtml(item.brand || "OrlaTrends")}</a>
+            <button class="wishlist-heart-remove" type="button" aria-label="Remove ${escapeHtml(item.name)} from wishlist">
+              <span class="material-symbols-outlined">favorite</span>
+            </button>
+          </div>
+          <a class="wishlist-item-name" href="${productUrl(item)}">${escapeHtml(item.name)}</a>
+          <div class="wishlist-price-row">
+            <strong>${OrlaFlow.money(item.price).replace(".00", "")}</strong>
+            ${item.old ? `<del>${OrlaFlow.money(item.old).replace("AED ", "").replace(".00", "")}</del>` : ""}
+            ${percent ? `<span>${percent}</span>` : ""}
+          </div>
+          <span class="wishlist-delivery">TOMORROW</span>
+          <small>Free delivery</small>
+          <div class="wishlist-card-actions">
+            <button class="wishlist-add-bag" type="button" data-add-bag>Add to Bag</button>
+            <button class="wishlist-delete" type="button" data-delete-item>
+              <span class="material-symbols-outlined">delete</span>
+              Delete
+            </button>
+          </div>
         </div>
       </article>
     `;
@@ -74,12 +140,14 @@
     const items = OrlaFlow.wishlist();
     syncActions(items);
     if (!items.length) {
-      grid.className = "empty-shop";
-      grid.innerHTML = `<div><h2>Your wishlist is empty</h2><p>Tap the heart on any OrlaTrends product to save it here.</p><p><a href="index.html">Continue shopping</a></p></div>`;
+      document.body.classList.add("wishlist-empty-mode");
+      grid.className = "wishlist-content is-empty";
+      grid.innerHTML = emptyTemplate();
       return;
     }
-    grid.className = "store-grid";
-    grid.innerHTML = items.map(itemTemplate).join("");
+    document.body.classList.remove("wishlist-empty-mode");
+    grid.className = "wishlist-content is-populated";
+    grid.innerHTML = `<div class="wishlist-list">${items.map(wishlistItemTemplate).join("")}</div>`;
   }
 
   function getItem(card) {
@@ -113,59 +181,32 @@
   }
 
   grid.addEventListener("click", (event) => {
-    const card = event.target.closest(".shop-card");
+    const recoButton = event.target.closest("[data-save-reco]");
+    if (recoButton) {
+      const item = OrlaFlow.defaultProducts.find((product) => String(product.id) === String(recoButton.dataset.saveReco));
+      if (item) {
+        const result = OrlaFlow.toggleWishlist(item);
+        render();
+        showToast(result.added ? "Saved to wishlist" : "Removed from wishlist");
+      }
+      return;
+    }
+
+    const card = event.target.closest(".wishlist-item-card");
     if (!card) return;
     const item = getItem(card);
     if (!item) return;
 
-    if (event.target.closest(".card-heart")) {
+    if (event.target.closest(".wishlist-heart-remove") || event.target.closest("[data-delete-item]")) {
       OrlaFlow.toggleWishlist(item);
-      state.selected.delete(String(item.id));
       render();
       showToast("Removed from wishlist");
+      return;
     }
 
     if (event.target.closest("[data-add-bag]")) {
       openDrawer(item);
     }
-  });
-
-  grid.addEventListener("change", (event) => {
-    if (!event.target.classList.contains("card-check")) return;
-    const id = event.target.closest(".shop-card")?.dataset.id;
-    if (!id) return;
-    if (event.target.checked) state.selected.add(String(id));
-    else state.selected.delete(String(id));
-    syncActions(OrlaFlow.wishlist());
-  });
-
-  editBtn.addEventListener("click", () => {
-    state.editing = true;
-    state.selected.clear();
-    render();
-  });
-
-  cancelBtn.addEventListener("click", () => {
-    state.editing = false;
-    state.selected.clear();
-    render();
-  });
-
-  deleteBtn.addEventListener("click", () => {
-    if (!state.selected.size) return;
-    const next = OrlaFlow.wishlist().filter((item) => !state.selected.has(String(item.id)));
-    OrlaFlow.saveWishlist(next);
-    state.selected.clear();
-    state.editing = false;
-    render();
-    showToast("Wishlist updated");
-  });
-
-  shareBtn.addEventListener("click", () => {
-    const selectedItems = OrlaFlow.wishlist().filter((item) => state.selected.has(String(item.id)));
-    const text = selectedItems.map((item) => `${item.name} - ${OrlaFlow.money(item.price)}`).join("\n");
-    if (navigator.share) navigator.share({ title: "OrlaTrends wishlist", text, url: location.href }).catch(() => {});
-    else navigator.clipboard?.writeText(`${text}\n${location.href}`).then(() => showToast("Wishlist copied"));
   });
 
   sizeChoices.addEventListener("click", (event) => {

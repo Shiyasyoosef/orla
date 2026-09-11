@@ -11,85 +11,19 @@
   <link rel="stylesheet" href="css/customer.css">
 </head>
 <body class="store-page wishlist-page">
-  <header class="store-header">
-    <div class="store-header-inner">
-      <a class="store-logo" href="index.html" aria-label="OrlaTrends home">
-        <img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends">
-        <span>OrlaTrends</span>
+  <main class="wishlist-main" aria-labelledby="wishlistTitle">
+    <div class="wishlist-title-row">
+      <a class="wishlist-back" href="index.html" aria-label="Back to shopping">
+        <span class="material-symbols-outlined">chevron_left</span>
       </a>
-      <form class="store-search" role="search">
-        <span class="material-symbols-outlined">search</span>
-        <input type="search" placeholder="Search dresses, abayas, tops..." aria-label="Search products">
-      </form>
-      <nav class="store-actions" aria-label="Store actions">
-        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
-        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
-        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
-      </nav>
-    </div>
-    <nav class="store-nav" aria-label="Categories">
-      <div class="store-nav-inner">
-        <a href="index.html">New In</a>
-        <a href="index.html">Dresses</a>
-        <a href="index.html">Abayas</a>
-        <a href="index.html">Jalabiyas</a>
-        <a href="index.html">Tops & Tees</a>
-        <a href="index.html">Jeans</a>
-        <a href="index.html">Skirts</a>
-        <a href="index.html">Sports</a>
-      </div>
-    </nav>
-  </header>
-
-  <main class="store-container">
-    <nav class="crumbs" aria-label="Breadcrumb">
-      <a href="index.html">Home</a>
-      <span>/</span>
-      <strong>Wishlist</strong>
-    </nav>
-
-    <div class="store-title-row">
-      <a class="mobile-page-back" href="index.html" aria-label="Back to home"><span class="material-symbols-outlined">chevron_left</span></a>
-      <h1>Wishlist <small id="wishlistCount">- 0 items</small></h1>
-      <div class="pill-actions">
-        <button class="pill-btn danger" id="deleteSelected" type="button" hidden>Delete</button>
-        <button class="pill-btn" id="shareSelected" type="button" hidden>Share</button>
-        <button class="pill-btn" id="editWishlist" type="button">Edit</button>
-        <button class="pill-btn" id="cancelEdit" type="button" hidden>Cancel</button>
+      <div>
+        <h1 id="wishlistTitle">Wishlist</h1>
+        <p id="wishlistCount">0 items</p>
       </div>
     </div>
 
-    <section id="wishlistGrid" class="store-grid" aria-live="polite"></section>
+    <section id="wishlistGrid" class="wishlist-content" aria-live="polite"></section>
   </main>
-
-  <footer class="store-footer">
-    <div class="store-footer-inner">
-      <section>
-        <h2>Shop</h2>
-        <a href="index.html">Categories</a>
-        <a href="index.html">New Arrivals</a>
-        <a href="wishlist.html">Wishlist</a>
-      </section>
-      <section>
-        <h2>Customer Service</h2>
-        <a href="mailto:info@orlatrends.com">Contact Us</a>
-        <a href="orders.html">Track Order</a>
-        <a href="account.html">Delivery Addresses</a>
-      </section>
-      <section>
-        <h2>Information</h2>
-        <a href="index.html">About OrlaTrends</a>
-        <a href="index.html">Privacy Policy</a>
-        <a href="index.html">Terms & Conditions</a>
-      </section>
-      <section>
-        <h2>Account</h2>
-        <a href="account.html">My Account</a>
-        <a href="orders.html">Orders</a>
-        <a href="customer-login.html">Login / Sign Up</a>
-      </section>
-    </div>
-  </footer>
 
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
   <aside class="size-drawer" id="sizeDrawer" aria-hidden="true" aria-label="Add wishlist item to bag">
@@ -109,13 +43,6 @@
     </div>
   </aside>
   <div class="toast" id="storeToast" role="status"></div>
-  <nav class="mobile-commerce-nav" aria-label="Mobile shopping navigation">
-    <a href="index.html"><span class="material-symbols-outlined">home</span></a>
-    <a href="index.html"><span class="material-symbols-outlined">category</span></a>
-    <a class="is-active" href="wishlist.html"><span class="material-symbols-outlined">favorite</span></a>
-    <a href="cart.html"><span class="material-symbols-outlined">shopping_bag</span><span class="mobile-commerce-badge" data-cart-count>0</span></a>
-    <a href="customer-login.html"><span class="material-symbols-outlined">person</span></a>
-  </nav>
 
   <script src="js/commerce-flow.js"></script>
   <script src="js/wishlist.js"></script>
