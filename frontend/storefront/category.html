@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Category | OrlaTrends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/storefront-pages.css">
+</head>
+<body class="orla-info-page">
+  <main class="orla-info-main">
+    <a class="orla-breadcrumb" href="index.html">Back to OrlaTrends</a>
+    <section class="orla-category-hero">
+      <div>
+        <h1 id="categoryTitle">Category</h1>
+        <p id="categoryIntro">Explore OrlaTrends products in this category.</p>
+      </div>
+      <span class="orla-category-count" id="categoryCount">0 products</span>
+    </section>
+
+    <nav class="orla-category-toolbar" aria-label="Category filters">
+      <div class="orla-category-chip-row" id="categoryChips"></div>
+    </nav>
+
+    <section class="orla-category-grid" id="categoryGrid" aria-live="polite"></section>
+  </main>
+
+  <script src="js/commerce-flow.js"></script>
+  <script src="js/storefront-chrome.js"></script>
+  <script>
+    const categories = [
+      { slug: "new-in", name: "New In", intro: "Fresh arrivals selected for the latest OrlaTrends edit." },
+      { slug: "dresses", name: "Dresses", intro: "Elegant dresses for daily wear, occasions and modest styling." },
+      { slug: "abayas", name: "Abayas", intro: "Curated abayas with soft drape, clean lines and premium detail." },
+      { slug: "tops-tees", name: "Tops & Tees", intro: "Easy tops and tees to pair with your everyday wardrobe." },
+      { slug: "jalabiyas", name: "Jalabiyas", intro: "Jalabiyas for relaxed, refined and festive dressing." },
+      { slug: "shirts", name: "Shirts", intro: "Structured and relaxed shirts for versatile styling." },
+      { slug: "jeans", name: "Jeans", intro: "Denim picks that work across casual and polished looks." },
+      { slug: "skirts", name: "Skirts", intro: "Skirts with comfortable movement and clean silhouettes." },
+      { slug: "pants", name: "Pants", intro: "Pants selected for easy styling and everyday comfort." },
+      { slug: "sports", name: "Sports", intro: "Sport-inspired pieces for active and casual days." },
+      { slug: "lingerie-nightwear", name: "Lingerie & Nightwear", intro: "Comfort-led nightwear and innerwear selections." }
+    ];
+
+    const products = [
+      { id: "product1", category: "abayas", brand: "OrlaTrends", name: "Premium Modest Dress", img: "assets/images/products/Product1.jpg", price: 569, old: 699, rating: "4.8 (18)" },
+      { id: "product2", category: "dresses", brand: "OrlaTrends", name: "Elegant Occasion Dress", img: "assets/images/products/Product2.jpg", price: 459, old: 599, rating: "4.6 (22)" },
+      { id: "product3", category: "dresses", brand: "OrlaTrends", name: "Printed Maxi Dress", img: "assets/images/products/Product3.jpg", price: 399, old: 549, rating: "4.5 (16)" },
+      { id: "product4", category: "tops-tees", brand: "OrlaTrends", name: "Floral Casual Dress", img: "assets/images/products/Product4.jpg", price: 349, old: 499, rating: "4.4 (13)" },
+      { id: "product5", category: "skirts", brand: "OrlaTrends", name: "Classic Women's Outfit", img: "assets/images/products/Product5.jpg", price: 299, old: 429, rating: "4.3 (20)" },
+      { id: "product6", category: "jalabiyas", brand: "OrlaTrends", name: "Soft Blue Long Dress", img: "assets/images/products/Product6.jpg", price: 379, old: 529, rating: "4.7 (11)" },
+      { id: "product7", category: "abayas", brand: "OrlaTrends", name: "Sabrina Embroidered Luxury Dress", img: "assets/images/products/Product7.jpg", price: 569, old: 699, rating: "4.9 (9)" },
+      { id: "product8", category: "dresses", brand: "OrlaTrends", name: "Textured Maxi Dress With Elegant Fit", img: "assets/images/products/Product8.jpg", price: 559, old: 699, rating: "4.1 (25)" },
+      { id: "product9", category: "shirts", brand: "OrlaTrends", name: "Lilly Deep V-Neck Premium Dress", img: "assets/images/products/Product9.jpg", price: 569, old: 699, rating: "4.5 (12)" },
+      { id: "product10", category: "jalabiyas", brand: "OrlaTrends", name: "Alessia Floral Print Maxi Dress", img: "assets/images/products/Product10.jpg", price: 711, old: 849, rating: "4.4 (13)" },
+      { id: "product11", category: "tops-tees", brand: "OrlaTrends", name: "Pink Occasion Wear Dress", img: "assets/images/products/Product11.jpg", price: 489, old: 649, rating: "4.6 (17)" },
+      { id: "product12", category: "pants", brand: "OrlaTrends", name: "Minimal Everyday Dress", img: "assets/images/products/Product12.jpg", price: 329, old: 449, rating: "4.2 (14)" }
+    ];
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function money(value) {
+      if (window.OrlaFlow?.money) return OrlaFlow.money(value).replace(".00", "");
+      return "AED " + Number(value || 0).toFixed(0);
+    }
+
+    function discount(item) {
+      const oldPrice = Number(item.old || 0);
+      const price = Number(item.price || 0);
+      if (!oldPrice || !price || oldPrice <= price) return "";
+      return `-${Math.round(((oldPrice - price) / oldPrice) * 100)}%`;
+    }
+
+    function selectedCategory() {
+      const params = new URLSearchParams(location.search);
+      const slug = params.get("category") || "new-in";
+      return categories.find((item) => item.slug === slug) || categories[0];
+    }
+
+    function productCard(item, index) {
+      const percent = discount(item);
+      const active = window.OrlaFlow?.isWishlisted?.(item.id);
+      return `
+        <article class="orla-product-card">
+          <a class="orla-product-link" href="product.html?id=${encodeURIComponent(item.id)}" aria-label="View ${escapeHtml(item.name)}">
+            <div class="orla-product-media">
+              <span class="orla-card-label">${index % 2 ? "PREMIUM" : "NEW IN"}</span>
+              <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}" loading="lazy">
+            </div>
+          </a>
+          <div class="orla-product-body">
+            <div class="orla-product-title-row">
+              <h2>${escapeHtml(item.brand)}</h2>
+              <button class="orla-wishlist-button ${active ? "is-active" : ""}" type="button" data-wishlist-id="${escapeHtml(item.id)}" aria-label="Save ${escapeHtml(item.name)}">${active ? "♥" : "♡"}</button>
+            </div>
+            <a class="orla-product-link" href="product.html?id=${encodeURIComponent(item.id)}">
+              <p class="orla-product-name">${escapeHtml(item.name)}</p>
+              <div class="orla-price-row">
+                <strong>${money(item.price)}</strong>
+                ${item.old ? `<del>${Number(item.old).toFixed(0)}</del>` : ""}
+                ${percent ? `<span>${percent}</span>` : ""}
+              </div>
+              <span class="orla-delivery-tag">${index % 2 ? "TODAY" : "TOMORROW"}</span>
+            </a>
+          </div>
+        </article>
+      `;
+    }
+
+    function render() {
+      const category = selectedCategory();
+      const grid = document.querySelector("#categoryGrid");
+      const chips = document.querySelector("#categoryChips");
+      const rows = category.slug === "new-in" ? products : products.filter((item) => item.category === category.slug);
+      document.title = `${category.name} | OrlaTrends`;
+      document.querySelector("#categoryTitle").textContent = category.name;
+      document.querySelector("#categoryIntro").textContent = category.intro;
+      document.querySelector("#categoryCount").textContent = `${rows.length} ${rows.length === 1 ? "product" : "products"}`;
+      chips.innerHTML = categories.map((item) => `<a class="orla-category-chip ${item.slug === category.slug ? "is-active" : ""}" href="category.html?category=${encodeURIComponent(item.slug)}">${escapeHtml(item.name)}</a>`).join("");
+      grid.innerHTML = rows.length ? rows.map(productCard).join("") : '<div class="orla-empty-category"><h2>No products found</h2><p>Please check another category.</p></div>';
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      render();
+      document.querySelector("#categoryGrid").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-wishlist-id]");
+        if (!button || !window.OrlaFlow) return;
+        const item = products.find((product) => product.id === button.dataset.wishlistId);
+        if (!item) return;
+        const result = OrlaFlow.toggleWishlist({ ...item, title: item.name, size: "S" });
+        button.classList.toggle("is-active", result.added);
+        button.textContent = result.added ? "♥" : "♡";
+      });
+    });
+  </script>
+</body>
+</html>

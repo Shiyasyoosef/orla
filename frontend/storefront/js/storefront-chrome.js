@@ -1,14 +1,14 @@
 (function () {
   const categories = [
-    ["New In", "index.html?category=new-in"],
-    ["Dresses", "index.html?category=dresses"],
-    ["Abayas", "index.html?category=abayas"],
-    ["Tops & Tees", "index.html?category=tops-tees"],
-    ["Jalabiyas", "index.html?category=jalabiyas"],
-    ["Shirts", "index.html?category=shirts"],
-    ["Jeans", "index.html?category=jeans"],
-    ["Skirts", "index.html?category=skirts"],
-    ["Sports", "index.html?category=sports"]
+    ["New In", "category.html?category=new-in"],
+    ["Dresses", "category.html?category=dresses"],
+    ["Abayas", "category.html?category=abayas"],
+    ["Tops & Tees", "category.html?category=tops-tees"],
+    ["Jalabiyas", "category.html?category=jalabiyas"],
+    ["Shirts", "category.html?category=shirts"],
+    ["Jeans", "category.html?category=jeans"],
+    ["Skirts", "category.html?category=skirts"],
+    ["Sports", "category.html?category=sports"]
   ];
 
   const footerLinks = [
@@ -21,7 +21,7 @@
 
   const bottomLinks = [
     ["⌂", "Home", "index.html"],
-    ["▧", "Categories", "index.html#shop-by-category"],
+    ["▧", "Categories", "category.html?category=new-in"],
     ["◇", "Sale", "index.html#sale"],
     ["◉", "Account", "customer-login.html"],
     ["▰", "Cart", "cart.html"]
@@ -67,7 +67,8 @@
     if (document.querySelector(".orla-mobile-bottom")) return;
     const active = currentFile();
     const html = bottomLinks.map(([icon, label, href]) => {
-      const isActive = active === href.toLowerCase();
+      const targetFile = href.split("?")[0].split("#")[0].toLowerCase();
+      const isActive = active === targetFile || (active === "category.html" && label === "Categories");
       return `<a class="orla-bottom-link${isActive ? " is-active" : ""}" href="${href}"><span aria-hidden="true">${icon}</span><span>${label}</span></a>`;
     }).join("");
     document.body.insertAdjacentHTML("beforeend", `<nav class="orla-mobile-bottom" aria-label="Mobile bottom navigation">${html}</nav>`);
