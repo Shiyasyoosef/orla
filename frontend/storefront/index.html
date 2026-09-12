@@ -1129,6 +1129,13 @@
       filter: brightness(0) invert(1);
     }
 
+    .whatsapp-icon svg {
+      width: 34px;
+      height: 34px;
+      display: block;
+      fill: currentColor;
+    }
+
     .whatsapp-text {
       display: grid;
       gap: 2px;
@@ -1990,25 +1997,26 @@
         <h2 class="section-title">Shop by Category</h2>
         <div class="category-controls">
           <button class="cat-scroll-btn cat-prev" type="button" aria-label="Previous categories">
-            <span class="material-symbols-outlined">chevron_left</span>
+            <span aria-hidden="true">‹</span>
           </button>
           <button class="cat-scroll-btn cat-next" type="button" aria-label="Next categories">
-            <span class="material-symbols-outlined">chevron_right</span>
+            <span aria-hidden="true">›</span>
           </button>
         </div>
       </div>
 
       <div class="category-scroll" id="categoryScroll">
         <div class="category-row" id="storefrontCategoryGrid">
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Newin.png" alt="New In"></div></a>
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Dresses.png" alt="Dresses"></div></a>
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Abayas.png" alt="Abayas"></div></a>
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Tops & Tees.png" alt="Tops and Tees"></div></a>
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Jalabiyas.png" alt="Jalabiyas"></div></a>
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/shirts.png" alt="Shirts"></div></a>
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Jeans.png" alt="Jeans"></div></a>
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Skirts.png" alt="Skirts"></div></a>
-          <a href="#" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Sports.png" alt="Sports"></div></a>
+          <a href="index.html?category=new-in" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Newin.png" alt="New In"></div><span class="category-name">New In</span></a>
+          <a href="index.html?category=dresses" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Dresses.png" alt="Dresses"></div><span class="category-name">Dresses</span></a>
+          <a href="index.html?category=abayas" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Abayas.png" alt="Abayas"></div><span class="category-name">Abayas</span></a>
+          <a href="index.html?category=tops-tees" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Tops & Tees.png" alt="Tops and Tees"></div><span class="category-name">Tops & Tees</span></a>
+          <a href="index.html?category=jalabiyas" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Jalabiyas.png" alt="Jalabiyas"></div><span class="category-name">Jalabiyas</span></a>
+          <a href="index.html?category=shirts" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/shirts.png" alt="Shirts"></div><span class="category-name">Shirts</span></a>
+          <a href="index.html?category=jeans" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Jeans.png" alt="Jeans"></div><span class="category-name">Jeans</span></a>
+          <a href="index.html?category=skirts" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Skirts.png" alt="Skirts"></div><span class="category-name">Skirts</span></a>
+          <a href="index.html?category=pants" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Pants.png" alt="Pants"></div><span class="category-name">Pants</span></a>
+          <a href="index.html?category=sports" class="category-item"><div class="cat-img-wrap"><img data-img="assets/images/categories/Sports.png" alt="Sports"></div><span class="category-name">Sports</span></a>
         </div>
       </div>
     </section>
@@ -2215,8 +2223,10 @@
   <div class="whatsapp-widget" id="whatsappWidget">
     <button class="whatsapp-close" type="button" aria-label="Close WhatsApp chat">x</button>
     <a class="whatsapp-chat" href="https://wa.me/917306818132?text=Hi%20Orla%20Trends%2C%20I%20need%20help" target="_blank" rel="noopener" aria-label="Chat with Orla Trends on WhatsApp">
-      <span class="whatsapp-icon">
-        <img src="icons/whatsapp-121.svg" alt="" aria-hidden="true">
+      <span class="whatsapp-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false">
+          <path d="M16.04 3.2A12.7 12.7 0 0 0 5.16 22.48L3.3 29.2l6.86-1.8A12.67 12.67 0 0 0 16.04 28.8h.01A12.8 12.8 0 0 0 28.8 16.03 12.77 12.77 0 0 0 16.04 3.2Zm.01 23.42h-.01a10.58 10.58 0 0 1-5.38-1.47l-.39-.23-4.07 1.07 1.09-3.96-.26-.41a10.51 10.51 0 1 1 9.02 5Zm5.77-7.87c-.32-.16-1.87-.92-2.16-1.03-.29-.11-.5-.16-.71.16-.21.32-.82 1.03-1 1.24-.18.21-.37.24-.69.08-.32-.16-1.34-.49-2.55-1.57-.94-.84-1.58-1.88-1.76-2.2-.18-.32-.02-.49.14-.65.14-.14.32-.37.48-.55.16-.18.21-.32.32-.53.11-.21.05-.4-.03-.55-.08-.16-.71-1.71-.97-2.34-.26-.62-.52-.53-.71-.54h-.61c-.21 0-.55.08-.84.4-.29.32-1.1 1.08-1.1 2.63 0 1.55 1.13 3.05 1.29 3.26.16.21 2.22 3.39 5.38 4.75.75.32 1.34.52 1.8.66.76.24 1.45.21 2 .13.61-.09 1.87-.76 2.14-1.5.26-.74.26-1.37.18-1.5-.08-.13-.29-.21-.61-.37Z"/>
+        </svg>
       </span>
       <span class="whatsapp-text">
         <strong>WhatsApp</strong>
@@ -2266,10 +2276,69 @@
         tryNext();
       }
 
+      const storefrontDefaultCategories = [
+        { id: "new-in", name: "New In", slug: "new-in", imageUrl: "assets/images/categories/Newin.png", displayOrder: 10 },
+        { id: "dresses", name: "Dresses", slug: "dresses", imageUrl: "assets/images/categories/Dresses.png", displayOrder: 20 },
+        { id: "abayas", name: "Abayas", slug: "abayas", imageUrl: "assets/images/categories/Abayas.png", displayOrder: 30 },
+        { id: "tops-tees", name: "Tops & Tees", slug: "tops-tees", imageUrl: "assets/images/categories/Tops & Tees.png", displayOrder: 40 },
+        { id: "jalabiyas", name: "Jalabiyas", slug: "jalabiyas", imageUrl: "assets/images/categories/Jalabiyas.png", displayOrder: 50 },
+        { id: "shirts", name: "Shirts", slug: "shirts", imageUrl: "assets/images/categories/shirts.png", displayOrder: 60 },
+        { id: "jeans", name: "Jeans", slug: "jeans", imageUrl: "assets/images/categories/Jeans.png", displayOrder: 70 },
+        { id: "skirts", name: "Skirts", slug: "skirts", imageUrl: "assets/images/categories/Skirts.png", displayOrder: 80 },
+        { id: "pants", name: "Pants", slug: "pants", imageUrl: "assets/images/categories/Pants.png", displayOrder: 90 },
+        { id: "sports", name: "Sports", slug: "sports", imageUrl: "assets/images/categories/Sports.png", displayOrder: 100 },
+        { id: "lingerie-nightwear", name: "Lingerie & Nightwear", slug: "lingerie-nightwear", imageUrl: "assets/images/categories/Lignerie & Nightwear.png", displayOrder: 110 }
+      ];
+
+      const categoryImageFallbacks = new Map(storefrontDefaultCategories.map(category => [category.slug, category.imageUrl]));
+
+      function slugifyCategory(value) {
+        return String(value || "")
+          .trim()
+          .toLowerCase()
+          .replace(/&/g, "and")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+
+      function normalizeStorefrontCategory(category, index = 0) {
+        const name = String(category?.name || category?.title || "").trim();
+        const slug = slugifyCategory(category?.slug || category?.id || name);
+        if (!name || !slug) return null;
+        return {
+          id: String(category?.id || slug),
+          name,
+          slug,
+          imageUrl: String(category?.imageUrl || category?.image_url || categoryImageFallbacks.get(slug) || "assets/images/categories/Newin.png").trim(),
+          displayOrder: Number(category?.displayOrder ?? category?.display_order ?? 1000 + index),
+          status: String(category?.status || "active").toLowerCase()
+        };
+      }
+
+      function mergeStorefrontCategories(rows = []) {
+        const merged = new Map();
+        storefrontDefaultCategories.forEach((category, index) => {
+          const normalized = normalizeStorefrontCategory(category, index);
+          if (normalized) merged.set(normalized.slug, normalized);
+        });
+        rows.map(normalizeStorefrontCategory).filter(Boolean).forEach(category => {
+          if (category.status && category.status !== "active") return;
+          const existing = merged.get(category.slug);
+          merged.set(category.slug, {
+            ...(existing || {}),
+            ...category,
+            imageUrl: category.imageUrl || existing?.imageUrl || "assets/images/categories/Newin.png",
+            displayOrder: existing ? Math.min(existing.displayOrder, category.displayOrder) : category.displayOrder
+          });
+        });
+        return Array.from(merged.values()).sort((a, b) => a.displayOrder - b.displayOrder || a.name.localeCompare(b.name));
+      }
+
       function renderStorefrontCategories(categories) {
         const nav = document.querySelector("#storefrontCategoryNav");
         const grid = document.querySelector("#storefrontCategoryGrid");
-        if (!nav || !grid || !Array.isArray(categories) || !categories.length) return;
+        if (!nav || !grid) return;
+        const normalizedCategories = mergeStorefrontCategories(Array.isArray(categories) ? categories : []);
 
         const makeLink = (category, className = "") => {
           const link = document.createElement("a");
@@ -2279,7 +2348,7 @@
           return link;
         };
 
-        nav.replaceChildren(...categories.slice(0, 10).map(category => {
+        nav.replaceChildren(...normalizedCategories.slice(0, 10).map(category => {
           const item = document.createElement("li");
           const link = makeLink(category);
           link.textContent = category.name;
@@ -2287,7 +2356,7 @@
           return item;
         }));
 
-        grid.replaceChildren(...categories.map(category => {
+        grid.replaceChildren(...normalizedCategories.map(category => {
           const link = makeLink(category, "category-item");
           const imageWrap = document.createElement("div");
           imageWrap.className = "cat-img-wrap";
@@ -2304,6 +2373,8 @@
           return link;
         }));
       }
+
+      renderStorefrontCategories(storefrontDefaultCategories);
 
       async function loadStorefrontCategories() {
         try {

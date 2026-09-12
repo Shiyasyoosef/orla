@@ -31,9 +31,12 @@ const DEFAULT_CATEGORIES = [
   { id: "abayas", name: "Abayas", slug: "abayas", image_url: "assets/images/categories/Abayas.png", display_order: 30 },
   { id: "jalabiyas", name: "Jalabiyas", slug: "jalabiyas", image_url: "assets/images/categories/Jalabiyas.png", display_order: 40 },
   { id: "tops-tees", name: "Tops & Tees", slug: "tops-tees", image_url: "assets/images/categories/Tops & Tees.png", display_order: 50 },
-  { id: "jeans", name: "Jeans", slug: "jeans", image_url: "assets/images/categories/Jeans.png", display_order: 60 },
-  { id: "skirts", name: "Skirts", slug: "skirts", image_url: "assets/images/categories/Skirts.png", display_order: 70 },
-  { id: "sports", name: "Sports", slug: "sports", image_url: "assets/images/categories/Sports.png", display_order: 80 }
+  { id: "shirts", name: "Shirts", slug: "shirts", image_url: "assets/images/categories/shirts.png", display_order: 60 },
+  { id: "jeans", name: "Jeans", slug: "jeans", image_url: "assets/images/categories/Jeans.png", display_order: 70 },
+  { id: "skirts", name: "Skirts", slug: "skirts", image_url: "assets/images/categories/Skirts.png", display_order: 80 },
+  { id: "pants", name: "Pants", slug: "pants", image_url: "assets/images/categories/Pants.png", display_order: 90 },
+  { id: "sports", name: "Sports", slug: "sports", image_url: "assets/images/categories/Sports.png", display_order: 100 },
+  { id: "lingerie-nightwear", name: "Lingerie & Nightwear", slug: "lingerie-nightwear", image_url: "assets/images/categories/Lignerie & Nightwear.png", display_order: 110 }
 ];
 
 const ALL_PERMISSIONS = [
@@ -492,24 +495,28 @@ function categoryResponse(id, data = {}, productCount = 0) {
 
 async function ensureDefaultCategories() {
   const categoriesRef = db.collection("categories");
-  const snapshot = await categoriesRef.limit(1).get();
-  if (!snapshot.empty) return;
+  const snapshot = await categoriesRef.get();
+  const existingDocs = new Map(snapshot.docs.map(doc => [doc.id, doc.data()]));
   const batch = db.batch();
   const now = admin.firestore.FieldValue.serverTimestamp();
+  let writes = 0;
   DEFAULT_CATEGORIES.forEach(category => {
+    const existing = existingDocs.get(category.id);
+    if (existing && existing.name && existing.image_url && existing.slug) return;
     batch.set(categoriesRef.doc(category.id), {
       name: category.name,
       slug: category.slug,
-      parent_id: "",
-      parent_name: "Root",
+      parent_id: existing?.parent_id || "",
+      parent_name: existing?.parent_name || "Root",
       image_url: category.image_url,
       display_order: category.display_order,
-      status: "active",
-      created_at: now,
+      status: existing?.status || "active",
+      created_at: existing?.created_at || now,
       updated_at: now
-    });
+    }, { merge: true });
+    writes += 1;
   });
-  await batch.commit();
+  if (writes) await batch.commit();
 }
 
 async function listCategories(activeOnly = false) {
