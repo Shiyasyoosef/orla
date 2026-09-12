@@ -31,8 +31,8 @@
         <a class="auth-tab" href="customer-login.html">Log in</a>
         <button class="auth-tab active" type="button">Sign up</button>
       </div>
-      <form id="registerForm" class="form-grid" novalidate>
-        <div id="registerError" class="error-box"></div>
+      <form id="registerForm" class="form-grid">
+        <div id="registerError" class="error-box" role="alert"></div>
         <div class="form-grid two-col">
           <div class="field">
             <label for="firstName">First name</label>
@@ -65,11 +65,13 @@
         <span>Already registered?</span>
         <a href="customer-login.html">Sign in</a>
       </div>
-      <p class="auth-site-note">This account is for the OrlaTrends storefront.</p>
+      <footer class="auth-privacy-footer"><a href="account-privacy.html">Privacy Policy</a></footer>
     </section>
   </main>
   <script src="js/customer-auth.js"></script>
   <script>
+    const next = OrlaCustomer.safeNext();
+    document.querySelectorAll('a[href="customer-login.html"]').forEach(link => { link.href = `customer-login.html?next=${encodeURIComponent(next)}`; });
     document.querySelector("[data-toggle-password]").addEventListener("click", (event) => {
       const input = document.querySelector("#password");
       input.type = input.type === "password" ? "text" : "password";
@@ -93,7 +95,7 @@
       OrlaCustomer.setLoading(button, true, "Creating...");
       try {
         await OrlaCustomer.register(data);
-        window.location.href = "account.html";
+        window.location.href = next;
       } catch (err) {
         OrlaCustomer.showMessage(error, err.message);
       } finally {

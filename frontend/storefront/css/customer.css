@@ -28,8 +28,8 @@ body {
 a { color: inherit; }
 button, input, select, textarea { font: inherit; }
 .customer-login-modal-page {
-  min-height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
+  overflow-x: clip;
   background: #f8fafc;
 }
 .auth-site-preview {
@@ -59,8 +59,11 @@ button, input, select, textarea { font: inherit; }
 }
 .customer-modal-shell {
   z-index: 2;
-  padding: 20px;
+  min-height: 100dvh;
+  padding: 16px 12px calc(16px + env(safe-area-inset-bottom));
+  overflow: visible;
 }
+.customer-modal-shell::before, .customer-modal-shell::after, .auth-modal-card::before { display: none; }
 .customer-shell::before,
 .customer-shell::after {
   content: "";
@@ -97,8 +100,9 @@ button, input, select, textarea { font: inherit; }
   overflow: hidden;
 }
 .auth-modal-card {
-  width: min(497px, calc(100vw - 24px));
-  padding: 0 88px 18px;
+  width: min(440px, 100%);
+  min-width: 0;
+  padding: 0 24px 24px;
   border-radius: 16px;
   background: rgba(255,255,255,.90);
   box-shadow: 0 30px 100px rgba(17,24,39,.34);
@@ -108,8 +112,8 @@ button, input, select, textarea { font: inherit; }
   top: 14px;
   right: 14px;
   z-index: 3;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -120,8 +124,8 @@ button, input, select, textarea { font: inherit; }
   line-height: 1;
 }
 .auth-visual {
-  height: 150px;
-  margin: 0 -88px 24px;
+  height: 120px;
+  margin: 0 -24px 20px;
   position: relative;
   overflow: hidden;
   border-radius: 16px 16px 0 0;
@@ -166,7 +170,7 @@ button, input, select, textarea { font: inherit; }
   background: #3f4657;
 }
 .auth-tab {
-  min-height: 30px;
+  min-height: 44px;
   display: grid;
   place-items: center;
   border: 0;
@@ -209,11 +213,29 @@ button, input, select, textarea { font: inherit; }
 .auth-card p { margin: 0 0 24px; color: var(--muted); font-size: 14px; line-height: 1.7; }
 .auth-modal-card .auth-mark { margin-top: 0; }
 .auth-modal-card .auth-logo { display: none; }
-.auth-modal-card h1 { font-size: 25px; letter-spacing: -.03em; }
+.auth-modal-card h1 { font-size: 24px; letter-spacing: 0; }
 .auth-modal-card p { margin-bottom: 0; }
-.auth-modal-card .field label { display: none; }
+.auth-modal-card .field { min-width: 0; }
+.auth-modal-card .field label { display: block; font-size: 13px; text-transform: none; letter-spacing: 0; }
+.auth-modal-card .password-row input { padding-right: 72px; }
+.auth-modal-card .password-row button { top: 2px; min-height: 44px; }
+.auth-modal-card :focus-visible { outline: 2px solid #b84300; outline-offset: 3px; }
+.auth-modal-card .auth-footer { flex-wrap: wrap; }
+.auth-modal-card .auth-site-note { margin-top: 18px; text-align: left; }
+.auth-recovery { display: block; margin-top: 14px; color: #a53b00; min-height: 44px; padding: 12px 0; }
+.auth-privacy-footer { margin-top: 12px; text-align: center; }
+.auth-privacy-footer a { display: inline-flex; align-items: center; min-height: 44px; color: #a53b00; font-size: 13px; text-underline-offset: 3px; }
+.privacy-page { background: #fff; }
+.privacy-content { width: min(760px, 100%); margin: 0 auto; padding: 32px 20px 48px; line-height: 1.7; overflow-wrap: anywhere; }
+.privacy-content h1 { font-size: 28px; line-height: 1.2; letter-spacing: 0; margin: 24px 0 12px; }
+.privacy-content h2 { font-size: 19px; line-height: 1.4; margin: 28px 0 8px; }
+.privacy-content p { margin: 8px 0; color: #52606f; }
+.privacy-content a { color: #a53b00; text-underline-offset: 3px; }
+.privacy-content a:focus-visible { outline: 2px solid #a53b00; outline-offset: 4px; }
+.privacy-content footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
 .auth-modal-card .field input {
   min-height: 49px;
+  font-size: 16px;
   border-radius: 8px;
   background: rgba(255,255,255,.82);
 }

@@ -653,6 +653,7 @@ app.post("/api/v1/customer/auth/register", authLimiter, asyncHandler(async (req,
   }
 
   const customerDoc = await syncCustomerProfile(decoded, { firstName, lastName, email, phoneNumber });
+  if (customerDoc.status === "inactive") return fail(res, 403, "Customer account is not active");
   const session = await startCustomerSession(customerDoc, req, res, true);
   ok(res, session, "Account created");
 }));

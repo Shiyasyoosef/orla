@@ -4,6 +4,22 @@
   const CUSTOMER_KEY = "orlaCustomerProfile";
   let csrfToken = "";
   let firebaseClientPromise = null;
+  let pendingRegistration = null;
+
+  function safeNext() {
+    const value = new URLSearchParams(location.search).get("next") || "account.html";
+    const allowed = /^(account|checkout|cart|wishlist|index|product|addresses|orders)\.html(?:\?[^#]*)?$/;
+    return allowed.test(value) ? value : "account.html";
+  }
+
+  async function resetPassword(email) {
+    try {
+      const firebase = await getFirebaseClient();
+      await firebase.sendPasswordResetEmail(firebase.auth, String(email).trim());
+    } catch (error) {
+      if (error.code !== "auth/user-not-found") throw new Error(authErrorMessage(error));
+    }
+  }
 
   function authErrorMessage(error) {
     const messages = {
@@ -100,10 +116,16 @@
     return payload.data || {};
   }
   async function register(data) {
+    if (!String(data.firstName || "").trim() || !String(data.lastName || "").trim()) throw new Error("Enter your first and last name");
     const firebase = await getFirebaseClient();
     try {
       await firebase.setPersistence(firebase.auth, firebase.browserLocalPersistence);
-      const credential = await firebase.createUserWithEmailAndPassword(firebase.auth, String(data.email || "").trim(), String(data.password || ""));
+      const email = String(data.email || "").trim();
+      // Retry only the account created in this page when its profile save failed.
+      const credential = pendingRegistration && pendingRegistration.user === firebase.auth.currentUser && pendingRegistration.user.email.toLowerCase() === email.toLowerCase()
+        ? pendingRegistration
+        : await firebase.createUserWithEmailAndPassword(firebase.auth, email, String(data.password || ""));
+      pendingRegistration = credential;
       const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ").trim();
       if (fullName) await firebase.updateProfile(credential.user, { displayName: fullName });
       const idToken = await credential.user.getIdToken(true);
@@ -118,9 +140,10 @@
         })
       }, false);
       setSession(response);
+      pendingRegistration = null;
       return response;
     } catch (error) {
-      throw new Error(authErrorMessage(error));
+      throw new Error(pendingRegistration ? "Your Firebase account was created, but profile setup is incomplete. Retry Create account, or sign in if you reopened this page. " + authErrorMessage(error) : authErrorMessage(error));
     }
   }
   async function login(data) {
@@ -199,5 +222,5 @@
     }
   }
 
-  window.OrlaCustomer = { api, register, login, refresh, requireAuth, logout, setSession, clearSession, getCustomer, getAccessToken, escapeHtml, formToObject, showMessage, setLoading };
+  window.OrlaCustomer = { api, register, login, resetPassword, safeNext, refresh, requireAuth, logout, setSession, clearSession, getCustomer, getAccessToken, escapeHtml, formToObject, showMessage, setLoading };
 })();

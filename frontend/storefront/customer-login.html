@@ -31,8 +31,8 @@
         <button class="auth-tab active" type="button">Log in</button>
         <a class="auth-tab" href="register.html">Sign up</a>
       </div>
-      <form id="loginForm" class="form-grid" novalidate>
-        <div id="loginError" class="error-box"></div>
+      <form id="loginForm" class="form-grid">
+        <div id="loginError" class="error-box" role="alert"></div>
         <div class="field">
           <label for="email">Email address</label>
           <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
@@ -47,6 +47,7 @@
         <label class="checkbox-row auth-remember"><input type="checkbox" name="rememberMe" checked> Remember me</label>
         <button class="primary-btn" type="submit">Sign in</button>
       </form>
+      <a class="auth-recovery" href="forgot-password.html">Forgot password?</a>
       <div class="auth-footer">
         <span>New to OrlaTrends?</span>
         <a href="register.html" id="createAccountLink">CREATE AN ACCOUNT</a>
@@ -56,7 +57,8 @@
   </main>
   <script src="js/customer-auth.js"></script>
   <script>
-    const next = new URLSearchParams(location.search).get("next") || "account.html";
+    const next = OrlaCustomer.safeNext();
+    document.querySelectorAll('a[href="register.html"]').forEach(link => { link.href = `register.html?next=${encodeURIComponent(next)}`; });
     document.querySelector("[data-toggle-password]").addEventListener("click", (event) => {
       const input = document.querySelector("#password");
       input.type = input.type === "password" ? "text" : "password";
@@ -71,7 +73,6 @@
       try {
         const form = event.currentTarget;
         const data = OrlaCustomer.formToObject(form);
-        data.rememberMe = form.rememberMe.checked;
         data.rememberMe = Boolean(event.currentTarget.rememberMe?.checked);
         await OrlaCustomer.login(data);
         window.location.href = next;
