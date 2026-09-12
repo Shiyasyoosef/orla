@@ -1,0 +1,375 @@
+:root {
+  --orla-black: #030303;
+  --orla-white: #ffffff;
+  --orla-ink: #111827;
+  --orla-muted: #6b7280;
+  --orla-line: #e5e7eb;
+  --orla-accent: #2563eb;
+  font-family: "Google Sans", "Segoe UI", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body.orla-info-page {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--orla-ink);
+  background: #fff;
+}
+
+.orla-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  color: #fff;
+  background: #000;
+  border-bottom: 1px solid #1f2937;
+}
+
+.orla-header-inner {
+  width: min(1120px, calc(100% - 32px));
+  min-height: 72px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 180px minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+}
+
+.orla-menu-btn,
+.orla-action-link,
+.orla-bottom-link {
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-decoration: none;
+}
+
+.orla-menu-btn {
+  display: none;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  font-size: 36px;
+}
+
+.orla-brand {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.orla-brand img {
+  width: 170px;
+  max-width: 100%;
+  height: 44px;
+  object-fit: contain;
+}
+
+.orla-search {
+  min-width: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+}
+
+.orla-search span {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.orla-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #111827;
+  background: transparent;
+  font: inherit;
+}
+
+.orla-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.orla-action-link {
+  min-width: 42px;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  font-size: 27px;
+  font-weight: 800;
+}
+
+.orla-sign-in {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 15px;
+}
+
+.orla-site-nav {
+  color: #fff;
+  background: #000;
+  border-bottom: 1px solid #1f2937;
+}
+
+.orla-nav-scroll {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.orla-nav-scroll::-webkit-scrollbar { display: none; }
+
+.orla-nav-list {
+  width: max-content;
+  min-width: 100%;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  margin: 0;
+  padding: 13px 0;
+  list-style: none;
+}
+
+.orla-nav-list a {
+  color: #e5e7eb;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.orla-info-main {
+  width: min(940px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 52px 0 96px;
+}
+
+.orla-breadcrumb {
+  display: inline-flex;
+  margin-bottom: 24px;
+  color: var(--orla-muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.orla-info-card {
+  padding: 0;
+  background: #fff;
+}
+
+.orla-info-card h1 {
+  margin: 0 0 14px;
+  color: #030712;
+  font-size: clamp(34px, 5vw, 56px);
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.orla-lead {
+  max-width: 720px;
+  margin: 0 0 34px;
+  color: #4b5563;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.orla-section {
+  padding: 28px 0;
+  border-top: 1px solid var(--orla-line);
+}
+
+.orla-section h2 {
+  margin: 0 0 10px;
+  color: #111827;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.orla-section p,
+.orla-section li {
+  color: #4b5563;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.orla-section p {
+  margin: 0 0 12px;
+}
+
+.orla-section ul {
+  margin: 12px 0 0;
+  padding-left: 20px;
+}
+
+.orla-section a {
+  color: #a53b00;
+  text-underline-offset: 3px;
+}
+
+.orla-page-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 28px 16px 96px;
+  color: #4b5563;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.orla-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 18px;
+  margin-top: 12px;
+}
+
+.orla-footer-links a {
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.orla-mobile-bottom {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  body.orla-info-page {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+
+  .orla-page-header {
+    position: sticky;
+  }
+
+  .orla-header-inner {
+    width: 100%;
+    min-height: 118px;
+    grid-template-columns: 58px minmax(0, 1fr) 58px;
+    gap: 8px;
+    padding: 14px 22px 10px;
+  }
+
+  .orla-menu-btn {
+    display: grid;
+  }
+
+  .orla-brand {
+    justify-content: center;
+  }
+
+  .orla-brand img {
+    width: min(260px, 58vw);
+    height: 48px;
+  }
+
+  .orla-search {
+    grid-column: 1 / -1;
+    order: 4;
+    height: 58px;
+    border-radius: 16px;
+    padding: 0 18px;
+    font-size: 20px;
+  }
+
+  .orla-search span {
+    font-size: 30px;
+  }
+
+  .orla-header-actions {
+    justify-content: end;
+    gap: 0;
+  }
+
+  .orla-sign-in,
+  .orla-cart-link {
+    display: none;
+  }
+
+  .orla-wishlist-link {
+    color: #f8df66;
+    font-size: 42px;
+  }
+
+  .orla-site-nav {
+    position: sticky;
+    top: 118px;
+    z-index: 39;
+  }
+
+  .orla-nav-scroll {
+    width: 100%;
+    padding: 0 22px;
+  }
+
+  .orla-nav-list {
+    min-width: 0;
+    gap: 34px;
+    padding: 16px 0;
+  }
+
+  .orla-nav-list a {
+    font-size: 16px;
+  }
+
+  .orla-info-main {
+    width: 100%;
+    padding: 36px 22px 72px;
+  }
+
+  .orla-info-card h1 {
+    font-size: 38px;
+  }
+
+  .orla-lead {
+    font-size: 17px;
+  }
+
+  .orla-mobile-bottom {
+    position: fixed;
+    left: 22px;
+    right: 22px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 60;
+    min-height: 74px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: center;
+    border: 1px solid rgba(226, 232, 240, .72);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, .92);
+    box-shadow: 0 12px 38px rgba(15, 23, 42, .18);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .orla-bottom-link {
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    gap: 3px;
+    color: #4b5563;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .orla-bottom-link span:first-child {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .orla-bottom-link.is-active {
+    color: var(--orla-accent);
+  }
+}
