@@ -58,7 +58,7 @@
           <div class="wishlist-reco-title">
             <a href="${productUrl(item)}">${escapeHtml(item.brand || "OrlaTrends")}</a>
             <button class="wishlist-mini-heart" type="button" data-save-reco="${escapeHtml(item.id)}" aria-label="Save ${escapeHtml(item.name)}">
-              <span class="material-symbols-outlined">favorite</span>
+              <span aria-hidden="true">♡</span>
             </button>
           </div>
           <p>${escapeHtml(item.name)}</p>
@@ -113,7 +113,7 @@
           <div class="wishlist-item-title">
             <a href="${productUrl(item)}">${escapeHtml(item.brand || "OrlaTrends")}</a>
             <button class="wishlist-heart-remove" type="button" aria-label="Remove ${escapeHtml(item.name)} from wishlist">
-              <span class="material-symbols-outlined">favorite</span>
+              <span aria-hidden="true">♥</span>
             </button>
           </div>
           <a class="wishlist-item-name" href="${productUrl(item)}">${escapeHtml(item.name)}</a>
@@ -127,7 +127,6 @@
           <div class="wishlist-card-actions">
             <button class="wishlist-add-bag" type="button" data-add-bag>Add to Bag</button>
             <button class="wishlist-delete" type="button" data-delete-item>
-              <span class="material-symbols-outlined">delete</span>
               Delete
             </button>
           </div>
