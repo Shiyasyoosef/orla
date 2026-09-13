@@ -20,11 +20,11 @@
   ];
 
   const bottomLinks = [
-    ["⌂", "Home", "index.html"],
-    ["▧", "Categories", "category.html?category=new-in"],
-    ["◇", "Sale", "index.html#sale"],
-    ["◉", "Account", "customer-login.html"],
-    ["▰", "Cart", "cart.html"]
+    ["home", "Home", "index.html"],
+    ["category", "Categories", "category.html?category=new-in"],
+    ["sell", "Sale", "index.html#sale"],
+    ["person_add", "Account", "customer-login.html"],
+    ["shopping_cart_checkout", "Cart", "cart.html"]
   ];
 
   function linkList(items) {
@@ -33,6 +33,14 @@
 
   function currentFile() {
     return (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  }
+
+  function ensureIconFont() {
+    if (document.querySelector('link[href*="Material+Symbols+Outlined"]')) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700";
+    document.head.appendChild(link);
   }
 
   function injectHeader() {
@@ -69,7 +77,7 @@
     const html = bottomLinks.map(([icon, label, href]) => {
       const targetFile = href.split("?")[0].split("#")[0].toLowerCase();
       const isActive = active === targetFile || (active === "category.html" && label === "Categories");
-      return `<a class="orla-bottom-link${isActive ? " is-active" : ""}" href="${href}"><span aria-hidden="true">${icon}</span><span>${label}</span></a>`;
+      return `<a class="orla-bottom-link${isActive ? " is-active" : ""}" href="${href}"><span class="material-symbols-outlined" aria-hidden="true">${icon}</span><span>${label}</span></a>`;
     }).join("");
     document.body.insertAdjacentHTML("beforeend", `<nav class="orla-mobile-bottom" aria-label="Mobile bottom navigation">${html}</nav>`);
   }
@@ -87,6 +95,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    ensureIconFont();
     injectHeader();
     injectFooter();
     injectBottomNav();

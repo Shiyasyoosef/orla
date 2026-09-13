@@ -978,6 +978,10 @@
       display: none;
     }
 
+    .mobile-bottom-nav {
+      display: none;
+    }
+
     .back-to-top {
       position: fixed;
       right: 24px;
@@ -1131,7 +1135,7 @@
 
     @media (max-width: 768px) {
       body {
-        padding-bottom: 74px;
+        padding-bottom: calc(154px + env(safe-area-inset-bottom));
       }
 
       .site-header {
@@ -1449,8 +1453,8 @@
         position: fixed;
         left: 0;
         right: 0;
-        bottom: 0;
-        z-index: 950;
+        bottom: calc(86px + env(safe-area-inset-bottom));
+        z-index: 940;
         display: grid;
         grid-template-columns: 64px 1fr;
         gap: 10px;
@@ -1470,8 +1474,50 @@
         width: 64px;
       }
 
+      .mobile-bottom-nav {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        z-index: 950;
+        height: 66px;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        border-radius: 22px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        align-items: center;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+      }
+
+      .bottom-link {
+        height: 100%;
+        color: #4b5563;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 2px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .bottom-link .material-symbols-outlined {
+        font-size: 28px;
+      }
+
+      .bottom-link.is-active {
+        color: var(--blue);
+      }
+
       body.mobile-zoom-open {
         overflow: hidden;
+      }
+
+      body.mobile-zoom-open .mobile-bottom-nav,
+      body.mobile-zoom-open .mobile-sticky-actions {
+        display: none;
       }
 
       .mobile-zoom-view {
@@ -1583,7 +1629,7 @@
 
       .whatsapp-widget {
         right: 14px;
-        bottom: 86px;
+        bottom: 170px;
       }
 
       .whatsapp-chat {
@@ -1886,6 +1932,14 @@
     </button>
     <button class="bag-action" type="button">Add to Bag</button>
   </div>
+
+  <nav class="mobile-bottom-nav" aria-label="Mobile bottom navigation">
+    <a href="index.html" class="bottom-link"><span class="material-symbols-outlined">home</span><span>Home</span></a>
+    <a href="category.html?category=new-in" class="bottom-link"><span class="material-symbols-outlined">category</span><span>Categories</span></a>
+    <a href="index.html#sale" class="bottom-link"><span class="material-symbols-outlined">sell</span><span>Sale</span></a>
+    <a href="customer-login.html" class="bottom-link"><span class="material-symbols-outlined">person_add</span><span>Account</span></a>
+    <a href="cart.html" class="bottom-link"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
+  </nav>
 
   <div class="mobile-zoom-view" id="mobileZoomView" aria-hidden="true">
     <div class="mobile-zoom-topbar">
