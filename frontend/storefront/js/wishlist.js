@@ -1,7 +1,9 @@
 (function () {
   const state = {
     drawerProduct: null,
-    drawerSize: "S"
+    drawerSize: "S",
+    editMode: false,
+    selectedIds: new Set()
   };
 
   const grid = document.querySelector("#wishlistGrid");
@@ -12,6 +14,10 @@
   const sizeChoices = document.querySelector("#sizeChoices");
   const drawerAdd = document.querySelector("#drawerAddToBag");
   const toast = document.querySelector("#storeToast");
+  const editButton = document.querySelector("#editWishlist");
+  const bulkBar = document.querySelector("#wishlistBulkBar");
+  const bulkDelete = document.querySelector("#bulkDelete");
+  const bulkShare = document.querySelector("#bulkShare");
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -32,6 +38,9 @@
 
   function syncActions(items) {
     count.textContent = `${items.length} ${items.length === 1 ? "item" : "items"}`;
+    editButton.hidden = !items.length;
+    if (!items.length && state.editMode) setEditMode(false);
+    syncBulkBar();
   }
 
   function productUrl(item) {
@@ -104,11 +113,17 @@
 
   function wishlistItemTemplate(item) {
     const percent = salePercent(item);
+    const selected = state.selectedIds.has(String(item.id));
     return `
-      <article class="wishlist-item-card" data-id="${escapeHtml(item.id)}">
-        <a class="wishlist-item-media" href="${productUrl(item)}" aria-label="View ${escapeHtml(item.name)}">
-          <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}" loading="lazy">
-        </a>
+      <article class="wishlist-item-card ${selected ? "is-selected" : ""}" data-id="${escapeHtml(item.id)}">
+        <div class="wishlist-item-media-wrap">
+          <a class="wishlist-item-media" href="${productUrl(item)}" aria-label="View ${escapeHtml(item.name)}">
+            <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}" loading="lazy">
+          </a>
+          <button class="wishlist-select-box" type="button" data-select-toggle aria-label="${selected ? "Deselect" : "Select"} ${escapeHtml(item.name)}">
+            <span class="material-symbols-outlined" aria-hidden="true">check</span>
+          </button>
+        </div>
         <div class="wishlist-item-body">
           <div class="wishlist-item-title">
             <a href="${productUrl(item)}">${escapeHtml(item.brand || "OrlaTrends")}</a>
@@ -125,7 +140,7 @@
           <span class="wishlist-delivery">TOMORROW</span>
           <small>Free delivery</small>
           <div class="wishlist-card-actions">
-            <button class="wishlist-add-bag" type="button" data-add-bag>Add to Bag</button>
+            <button class="wishlist-add-bag" type="button" data-add-bag ${state.editMode ? "disabled" : ""}>Add to Bag</button>
             <button class="wishlist-delete" type="button" data-delete-item>
               Delete
             </button>
@@ -137,6 +152,7 @@
 
   function render() {
     const items = OrlaFlow.wishlist();
+    state.selectedIds = new Set([...state.selectedIds].filter((id) => items.some((item) => String(item.id) === String(id))));
     syncActions(items);
     if (!items.length) {
       document.body.classList.add("wishlist-empty-mode");
@@ -145,13 +161,42 @@
       return;
     }
     document.body.classList.remove("wishlist-empty-mode");
+    document.body.classList.toggle("wishlist-edit-mode", state.editMode);
     grid.className = "wishlist-content is-populated";
     grid.innerHTML = `<div class="wishlist-list">${items.map(wishlistItemTemplate).join("")}</div>`;
+    syncBulkBar();
   }
 
   function getItem(card) {
     const id = card?.dataset.id;
     return OrlaFlow.wishlist().find((item) => String(item.id) === String(id));
+  }
+
+  function syncBulkBar() {
+    if (!bulkBar) return;
+    const selectedCount = state.selectedIds.size;
+    bulkBar.hidden = !state.editMode;
+    bulkDelete.disabled = selectedCount === 0;
+    bulkShare.disabled = selectedCount === 0;
+    bulkDelete.setAttribute("aria-label", selectedCount ? `Delete ${selectedCount} selected wishlist items` : "Delete selected wishlist items");
+    bulkShare.setAttribute("aria-label", selectedCount ? `Share ${selectedCount} selected wishlist items` : "Share selected wishlist items");
+  }
+
+  function setEditMode(enabled) {
+    state.editMode = enabled;
+    if (!enabled) state.selectedIds.clear();
+    document.body.classList.toggle("wishlist-edit-mode", enabled);
+    editButton.textContent = enabled ? "× CANCEL" : "EDIT";
+    editButton.setAttribute("aria-pressed", String(enabled));
+    render();
+  }
+
+  function toggleSelection(card) {
+    const id = String(card?.dataset.id || "");
+    if (!id) return;
+    if (state.selectedIds.has(id)) state.selectedIds.delete(id);
+    else state.selectedIds.add(id);
+    render();
   }
 
   function closeDrawer() {
@@ -196,6 +241,12 @@
     const item = getItem(card);
     if (!item) return;
 
+    if (state.editMode) {
+      event.preventDefault();
+      toggleSelection(card);
+      return;
+    }
+
     if (event.target.closest(".wishlist-heart-remove") || event.target.closest("[data-delete-item]")) {
       OrlaFlow.toggleWishlist(item);
       render();
@@ -206,6 +257,36 @@
     if (event.target.closest("[data-add-bag]")) {
       openDrawer(item);
     }
+  });
+
+  editButton.addEventListener("click", () => setEditMode(!state.editMode));
+
+  bulkDelete.addEventListener("click", () => {
+    if (!state.selectedIds.size) return;
+    const remaining = OrlaFlow.wishlist().filter((item) => !state.selectedIds.has(String(item.id)));
+    OrlaFlow.saveWishlist(remaining);
+    const removedCount = state.selectedIds.size;
+    state.selectedIds.clear();
+    setEditMode(false);
+    showToast(`${removedCount} ${removedCount === 1 ? "item" : "items"} deleted`);
+  });
+
+  bulkShare.addEventListener("click", async () => {
+    const items = OrlaFlow.wishlist().filter((item) => state.selectedIds.has(String(item.id)));
+    if (!items.length) return;
+    const urls = items.map((item) => new URL(productUrl(item), window.location.href).href);
+    const shareData = {
+      title: "My OrlaTrends wishlist",
+      text: urls.join("\n"),
+      url: urls[0]
+    };
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(urls.join("\n"));
+        showToast("Wishlist links copied");
+      }
+    } catch (_) {}
   });
 
   sizeChoices.addEventListener("click", (event) => {

@@ -11,6 +11,29 @@
   <link rel="stylesheet" href="css/customer.css">
 </head>
 <body class="store-page wishlist-page">
+  <header class="store-header checkout-header">
+    <div class="store-header-inner checkout-header-inner">
+      <button class="checkout-menu-trigger" type="button" aria-label="Open menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
+      <nav class="store-actions checkout-header-actions" aria-label="Store actions">
+        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
+      </nav>
+    </div>
+    <nav class="store-nav" aria-label="Categories">
+      <div class="store-nav-inner">
+        <a href="category.html?category=new-in">New In</a>
+        <a href="category.html?category=dresses">Dresses</a>
+        <a href="category.html?category=abayas">Abayas</a>
+        <a href="category.html?category=jalabiyas">Jalabiyas</a>
+        <a href="category.html?category=tops-tees">Tops & Tees</a>
+        <a href="category.html?category=jeans">Jeans</a>
+        <a href="category.html?category=skirts">Skirts</a>
+        <a href="category.html?category=sports">Sports</a>
+      </div>
+    </nav>
+  </header>
   <main class="wishlist-main" aria-labelledby="wishlistTitle">
     <div class="wishlist-title-row">
       <a class="wishlist-back" href="index.html" aria-label="Back to shopping">
@@ -20,6 +43,7 @@
         <h1 id="wishlistTitle">Wishlist</h1>
         <p id="wishlistCount">0 items</p>
       </div>
+      <button class="wishlist-edit-toggle" id="editWishlist" type="button" aria-pressed="false">EDIT</button>
     </div>
 
     <section id="wishlistGrid" class="wishlist-content" aria-live="polite"></section>
@@ -43,6 +67,17 @@
     </div>
   </aside>
   <div class="toast" id="storeToast" role="status"></div>
+
+  <div class="wishlist-bulk-bar" id="wishlistBulkBar" hidden>
+    <button class="wishlist-bulk-action danger" id="bulkDelete" type="button">
+      <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+      DELETE
+    </button>
+    <button class="wishlist-bulk-action" id="bulkShare" type="button">
+      <span class="material-symbols-outlined" aria-hidden="true">ios_share</span>
+      SHARE
+    </button>
+  </div>
 
   <nav class="mobile-commerce-nav" aria-label="Mobile bottom navigation">
     <a href="index.html"><span class="material-symbols-outlined">home</span><span>Home</span></a>

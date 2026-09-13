@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Address Book | OrlaTrends</title>
+  <title>My Account | OrlaTrends</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
   <link rel="stylesheet" href="css/customer.css">
 </head>
-<body>
-  <header class="store-header">
-    <div class="store-header-inner">
+<body class="account-page">
+  <header class="store-header checkout-header">
+    <div class="store-header-inner checkout-header-inner">
+      <button class="checkout-menu-trigger" type="button" aria-label="Open menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
       <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
-      <form class="store-search" role="search"><span class="material-symbols-outlined">search</span><input type="search" placeholder="What are you looking for?" aria-label="Search products"></form>
-      <nav class="store-actions" aria-label="Store actions">
-        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
+      <nav class="store-actions checkout-header-actions" aria-label="Store actions">
         <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
-        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
       </nav>
     </div>
     <nav class="store-nav" aria-label="Categories">
@@ -35,21 +35,123 @@
     </nav>
   </header>
   <div class="customer-app">
-    <main class="page-wrap">
-      <p class="page-kicker">My Account</p>
-      <div class="store-title-row"><a class="mobile-page-back" href="index.html" aria-label="Back to home"><span class="material-symbols-outlined">chevron_left</span></a><h1>Address Book</h1></div>
-      <p class="page-subtitle">Welcome, <strong id="customerName">Customer</strong>. Manage home, office and other delivery addresses without adding address friction during signup.</p>
-
-      <div class="toolbar">
-        <div>
-          <strong>Saved addresses</strong>
-          <p class="page-subtitle" style="margin:4px 0 0;">Default shipping address is highlighted.</p>
+    <main class="page-wrap account-dashboard" aria-labelledby="accountTitle">
+      <section class="account-overview" aria-label="Customer overview">
+        <div class="account-avatar" aria-hidden="true" id="accountInitial">O</div>
+        <div class="account-identity">
+          <p class="account-eyebrow">My Account</p>
+          <h1 id="accountTitle">Welcome back</h1>
+          <p class="account-email" id="customerEmail">Loading account...</p>
+          <div class="profile-progress" aria-label="Profile completion">
+            <span class="profile-progress-bar"><span id="profileProgressBar"></span></span>
+            <strong id="profileProgressText">53%</strong>
+            <span>Complete for a personalized experience.</span>
+          </div>
         </div>
-        <button class="secondary-btn" type="button" id="addAddressBtn">Add New Address</button>
-      </div>
+        <button class="account-edit-link" type="button" data-account-view="profile" aria-label="Edit basic profile">
+          <span class="material-symbols-outlined">north_east</span>
+        </button>
+      </section>
 
-      <section id="addressGrid" class="address-grid" aria-live="polite">
-        <div class="empty-state">Loading addresses...</div>
+      <section class="account-menu-card" aria-label="Account menu">
+        <a class="account-menu-row" href="orders.html">
+          <span>Orders</span>
+          <small>Order history, status and tracking</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </a>
+        <button class="account-menu-row" type="button" data-account-view="returns">
+          <span>Returns</span>
+          <small>Manage product return requests</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="exchanges">
+          <span>Exchanges</span>
+          <small>Request product exchanges</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="wallet">
+          <span>Wallet</span>
+          <small>Store credits, refunds and cashback</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="coupons">
+          <span>Coupons</span>
+          <small>Active discount codes and rewards</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="addresses">
+          <span>Delivery Addresses</span>
+          <small>Manage saved home, office and other addresses</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="cards">
+          <span>Payment Cards</span>
+          <small>Save cards for faster checkout</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="profile">
+          <span>User Profile</span>
+          <small>Edit name, phone number and password</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="reviews">
+          <span>Reviews</span>
+          <small>View and write product reviews</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="notifications">
+          <span>Notifications</span>
+          <small>Manage website alerts and updates</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row" type="button" data-account-view="help">
+          <span>Help Center</span>
+          <small>Support, FAQs and help guides</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+      </section>
+
+      <section class="account-menu-card account-settings-card" aria-label="Settings and utilities">
+        <button class="account-menu-row compact" type="button" data-account-view="country">
+          <span><span class="setting-flag" aria-hidden="true">🇦🇪</span> United Arab Emirates</span>
+          <small>Country selector</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row compact" type="button" data-account-view="language">
+          <span>English / العربية</span>
+          <small>Switch language</small>
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <button class="account-menu-row logout-row" type="button" id="logoutBtn">
+          <span>Log Out</span>
+          <small>Safely sign out of this account</small>
+          <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+        </button>
+      </section>
+
+      <section class="account-detail-panel" id="accountDetailPanel" hidden aria-live="polite">
+        <div class="account-panel-head">
+          <button class="mobile-page-back" type="button" id="backToDashboard" aria-label="Back to account menu"><span class="material-symbols-outlined">chevron_left</span></button>
+          <div>
+            <p class="account-eyebrow">My Account</p>
+            <h2 id="accountPanelTitle">Delivery Addresses</h2>
+          </div>
+        </div>
+        <div id="accountPanelContent" class="account-placeholder-panel"></div>
+      </section>
+
+      <section class="address-manager" id="addressManager" hidden>
+        <div class="toolbar">
+          <div>
+            <strong>Saved addresses</strong>
+            <p class="page-subtitle" style="margin:4px 0 0;">Default shipping address is highlighted.</p>
+          </div>
+          <button class="secondary-btn" type="button" id="addAddressBtn">Add New Address</button>
+        </div>
+
+        <section id="addressGrid" class="address-grid" aria-live="polite">
+          <div class="empty-state">Loading addresses...</div>
+        </section>
       </section>
     </main>
   </div>

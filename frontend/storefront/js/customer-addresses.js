@@ -1,9 +1,38 @@
-﻿(function () {
-  const state = { addresses: [], editingId: null };
+(function () {
+  const state = { addresses: [], editingId: null, customer: null };
   const els = {};
+  const panelCopy = {
+    returns: ["Returns", "Return requests will appear here once eligible delivered products are available for return."],
+    exchanges: ["Exchanges", "Exchange requests will appear here. You can request a different size or suitable replacement when a product is eligible."],
+    wallet: ["Wallet", "Your store credits, refunds, cashback and adjustment balances will be listed here."],
+    coupons: ["Coupons", "Active discount codes and reward offers assigned to your account will be shown here."],
+    cards: ["Payment Cards", "Saved credit and debit cards for faster checkout will be managed here when card vault support is enabled."],
+    reviews: ["Reviews", "Products purchased from your account will appear here so you can write and manage reviews."],
+    notifications: ["Notifications", "Manage order updates, promotions and account alert preferences from this section."],
+    help: ["Help Center", "Need help? Contact support, view FAQs, or check delivery and return guidance."],
+    country: ["Country Selector", "Current region: United Arab Emirates. More country options can be enabled from the storefront settings."],
+    language: ["Switch Language", "Current language: English. Arabic storefront language support can be connected here."]
+  };
 
   function addressLine(address) {
     return [address.streetAddress, address.area, address.city, address.emirate || address.state, address.country, address.pincode || address.zipCode].filter(Boolean).join(", ");
+  }
+  function customerName(customer) {
+    return customer?.fullName || `${customer?.firstName || ""} ${customer?.lastName || ""}`.trim() || "Customer";
+  }
+  function profileCompletion(customer) {
+    const fields = [customer?.firstName, customer?.lastName, customer?.email, customer?.phoneNumber, state.addresses.length ? "address" : ""];
+    const complete = fields.filter((value) => String(value || "").trim()).length;
+    return Math.max(20, Math.round((complete / fields.length) * 100));
+  }
+  function updateOverview() {
+    const customer = state.customer || {};
+    const name = customerName(customer);
+    const percent = profileCompletion(customer);
+    document.querySelector("#customerEmail").textContent = customer.email || "Customer account";
+    document.querySelector("#accountInitial").textContent = (name.trim()[0] || "O").toUpperCase();
+    document.querySelector("#profileProgressText").textContent = `${percent}%`;
+    document.querySelector("#profileProgressBar").style.width = `${percent}%`;
   }
   function setModal(open) {
     els.modal.classList.toggle("is-open", open);
@@ -26,7 +55,7 @@
     }
     els.grid.innerHTML = state.addresses.map((address) => `
       <article class="address-card ${address.isDefaultShipping ? "is-default" : ""}" data-address-id="${address.addressId}">
-        <span class="badge">${OrlaCustomer.escapeHtml(address.addressType || "Home")}${address.isDefaultShipping ? " � Default shipping" : ""}</span>
+        <span class="badge">${OrlaCustomer.escapeHtml(address.addressType || "Home")}${address.isDefaultShipping ? " - Default shipping" : ""}</span>
         <h3>${OrlaCustomer.escapeHtml(address.fullName)}</h3>
         <p>${OrlaCustomer.escapeHtml(address.phoneNumber)}</p>
         <p>${OrlaCustomer.escapeHtml(addressLine(address))}</p>
@@ -38,10 +67,44 @@
       </article>
     `).join("");
   }
+  function showDashboard() {
+    els.detailPanel.hidden = true;
+    els.addressManager.hidden = true;
+    els.panelContent.hidden = false;
+    history.replaceState(null, "", "account.html");
+  }
+  function placeholderHtml(view) {
+    if (view === "profile") {
+      const customer = state.customer || {};
+      return `
+        <strong>User Profile</strong>
+        <p>Review the registered details connected to this account.</p>
+        <ul class="account-placeholder-list">
+          <li><span>Name</span><b>${OrlaCustomer.escapeHtml(customerName(customer))}</b></li>
+          <li><span>Email</span><b>${OrlaCustomer.escapeHtml(customer.email || "Not added")}</b></li>
+          <li><span>Phone</span><b>${OrlaCustomer.escapeHtml(customer.phoneNumber || "Not added")}</b></li>
+        </ul>
+      `;
+    }
+    const [title, message] = panelCopy[view] || ["Account", "This account section is being prepared."];
+    return `<strong>${OrlaCustomer.escapeHtml(title)}</strong><p>${OrlaCustomer.escapeHtml(message)}</p>`;
+  }
+  function showPanel(view) {
+    const isAddresses = view === "addresses";
+    const [title] = isAddresses ? ["Delivery Addresses"] : (panelCopy[view] || (view === "profile" ? ["User Profile"] : ["Account"]));
+    els.panelTitle.textContent = title;
+    els.detailPanel.hidden = false;
+    els.addressManager.hidden = !isAddresses;
+    els.panelContent.hidden = isAddresses;
+    if (!isAddresses) els.panelContent.innerHTML = placeholderHtml(view);
+    history.replaceState(null, "", `account.html#${view}`);
+    els.detailPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   async function loadAddresses() {
     const data = await OrlaCustomer.api("/api/v1/customer/addresses");
     state.addresses = data.addresses || [];
     render();
+    updateOverview();
   }
   function fillForm(address) {
     state.editingId = address.addressId;
@@ -94,10 +157,19 @@
     els.form = document.querySelector("#addressForm");
     els.modalTitle = document.querySelector("#addressModalTitle");
     els.error = document.querySelector("#addressError");
+    els.detailPanel = document.querySelector("#accountDetailPanel");
+    els.panelTitle = document.querySelector("#accountPanelTitle");
+    els.panelContent = document.querySelector("#accountPanelContent");
+    els.addressManager = document.querySelector("#addressManager");
     const customer = await OrlaCustomer.requireAuth();
     if (!customer) return;
-    document.querySelector("#customerName").textContent = customer.fullName || `${customer.firstName} ${customer.lastName}`.trim() || "My Account";
+    state.customer = customer;
+    updateOverview();
     document.querySelector("#logoutBtn")?.addEventListener("click", OrlaCustomer.logout);
+    document.querySelector("#backToDashboard")?.addEventListener("click", showDashboard);
+    document.querySelectorAll("[data-account-view]").forEach((button) => {
+      button.addEventListener("click", () => showPanel(button.dataset.accountView));
+    });
     document.querySelector("#addAddressBtn").addEventListener("click", () => { resetForm(); setModal(true); });
     document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => setModal(false)));
     els.form.addEventListener("submit", saveAddress);
@@ -111,6 +183,8 @@
       if (deleteButton) await removeAddress(deleteButton.dataset.delete);
     });
     await loadAddresses();
+    const initialView = location.hash.replace("#", "");
+    if (initialView) showPanel(initialView);
   }
   document.addEventListener("DOMContentLoaded", init);
 })();
