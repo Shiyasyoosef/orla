@@ -2314,6 +2314,8 @@ button, input, select, textarea { font: inherit; }
   .wishlist-page .pill-actions:has(#deleteSelected:not([hidden])) #deleteSelected {
     color: #dc2626;
   }
+  .payment-page .site-header,
+  .payment-page .site-nav,
   .payment-page .store-header,
   .payment-page .store-nav,
   .payment-page .crumbs {
@@ -2325,53 +2327,86 @@ button, input, select, textarea { font: inherit; }
   .payment-page .store-container {
     width: 100%;
     min-height: 100dvh;
-    display: grid;
-    align-items: end;
-    padding: 58px 0 calc(26px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 74px 0 0;
   }
   .payment-page .store-title-row,
   .payment-page .checkout-shell {
     width: 100%;
     margin: 0;
-    border-radius: 24px 24px 0 0;
     background: #fff;
   }
   .payment-page .store-title-row {
-    min-height: 82px;
-    padding: 22px 26px 8px;
+    min-height: 76px;
+    padding: 22px 24px 14px;
+    border-radius: 24px 24px 0 0;
+    border-bottom: 1px solid #eef0f3;
     box-shadow: none;
   }
   .payment-page .store-title-row h1 {
-    font-size: 24px;
+    font-size: 25px;
+    letter-spacing: -.03em;
   }
   .payment-page .mobile-page-back {
     order: 3;
     display: grid;
+    width: 42px;
+    height: 42px;
     box-shadow: none;
     border: 0;
     background: transparent;
+    font-size: 36px;
+    line-height: 1;
   }
   .payment-page .store-title-row .pill-btn {
     display: none !important;
   }
   .payment-page .checkout-shell {
-    padding: 8px 26px calc(26px + env(safe-area-inset-bottom));
+    border-radius: 0;
+    gap: 0;
+    padding: 28px 24px calc(26px + env(safe-area-inset-bottom));
   }
   .payment-page .commerce-panel {
     border: 0;
     padding: 0;
   }
+  .payment-page #pay > h2 {
+    display: none;
+  }
   .payment-page aside.commerce-panel {
     display: none;
   }
+  .payment-page .payment-options {
+    gap: 14px;
+  }
   .payment-option {
-    min-height: 76px;
+    min-height: 92px;
     align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
     border-radius: 12px;
+  }
+  .payment-option strong {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+  .payment-option small {
+    display: block;
+    margin-top: 4px;
+    font-size: 15px;
+    line-height: 1.35;
   }
   .payment-option input {
     width: 28px;
     height: 28px;
+    flex: 0 0 auto;
+  }
+  .payment-page .bag-btn {
+    min-height: 58px;
+    margin-top: 26px;
+    font-size: 16px;
   }
   .drawer-content {
     min-height: 100dvh;

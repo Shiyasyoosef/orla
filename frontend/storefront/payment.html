@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Payment | OrlaTrends</title>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700" rel="stylesheet">
-  <link rel="stylesheet" href="css/customer.css?v=20260914r2">
+  <link rel="stylesheet" href="css/customer.css?v=20260914r3">
 </head>
 <body class="store-page payment-page">
   <header class="site-header">
@@ -58,7 +58,7 @@
   </nav>
   <main class="store-container">
     <nav class="crumbs"><a href="cart.html">Go to Bag</a><span>/</span><strong>Secure Checkout</strong></nav>
-    <div class="store-title-row"><a class="mobile-page-back" href="checkout.html" aria-label="Back to delivery"><span class="material-symbols-outlined">close</span></a><h1>Payment Method</h1><a class="pill-btn" style="display:grid;place-items:center;text-decoration:none;" href="checkout.html">Delivery Address</a></div>
+    <div class="store-title-row"><a class="mobile-page-back" href="checkout.html" aria-label="Back to delivery"><span aria-hidden="true">×</span></a><h1>Payment Method</h1><a class="pill-btn" style="display:grid;place-items:center;text-decoration:none;" href="checkout.html">Delivery Address</a></div>
     <section class="checkout-shell">
       <form id="pay" class="commerce-panel form-grid">
         <div id="paymentError" class="error-box"></div>
@@ -101,7 +101,7 @@
     <a href="cart.html" class="bottom-link is-active"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
   </nav>
   <script src="js/customer-auth.js"></script>
-  <script src="js/commerce-flow.js?v=20260914r2"></script>
+  <script src="js/commerce-flow.js?v=20260914r3"></script>
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       const totalEl = document.querySelector("#total");
