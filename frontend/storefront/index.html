@@ -157,6 +157,7 @@
     }
 
     .action-link {
+      position: relative;
       color: var(--white);
       display: inline-flex;
       align-items: center;
@@ -168,6 +169,28 @@
 
     .action-link:hover {
       color: var(--accent);
+    }
+
+    .wishlist-count-badge {
+      position: absolute;
+      right: 0;
+      top: 0;
+      min-width: 17px;
+      height: 17px;
+      display: grid;
+      place-items: center;
+      padding: 0 5px;
+      border: 2px solid #000;
+      border-radius: 999px;
+      color: #000;
+      background: #f8df66;
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .wishlist-count-badge[hidden] {
+      display: none;
     }
 
     .site-nav {

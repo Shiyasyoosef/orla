@@ -156,6 +156,7 @@
     }
 
     .action-link {
+      position: relative;
       color: var(--white);
       display: inline-flex;
       align-items: center;
@@ -167,6 +168,28 @@
 
     .action-link:hover {
       color: #fce26c;
+    }
+
+    .wishlist-count-badge {
+      position: absolute;
+      right: 0;
+      top: 0;
+      min-width: 17px;
+      height: 17px;
+      display: grid;
+      place-items: center;
+      padding: 0 5px;
+      border: 2px solid #000;
+      border-radius: 999px;
+      color: #000;
+      background: #f8df66;
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .wishlist-count-badge[hidden] {
+      display: none;
     }
 
     .site-nav {
@@ -1724,16 +1747,17 @@
 
   <nav class="site-nav" aria-label="Main navigation">
     <div class="nav-window">
-      <ul class="nav-list">
-        <li><a href="index.html">Kurta Sets</a></li>
-        <li><a href="index.html">Dresses</a></li>
-        <li><a href="index.html">Sarees</a></li>
-        <li><a href="index.html">Jeans</a></li>
-        <li><a href="index.html">Kurtis</a></li>
-        <li><a href="index.html">Tops</a></li>
-        <li><a href="index.html">Lehenga</a></li>
-        <li><a href="index.html">Abayas</a></li>
-        <li><a href="index.html">New In</a></li>
+      <ul class="nav-list" id="storefrontCategoryNav">
+        <li><a href="category.html?category=new-in">New In</a></li>
+        <li><a href="category.html?category=dresses">Dresses</a></li>
+        <li><a href="category.html?category=abayas">Abayas</a></li>
+        <li><a href="category.html?category=tops-tees">Tops & Tees</a></li>
+        <li><a href="category.html?category=jalabiyas">Jalabiyas</a></li>
+        <li><a href="category.html?category=shirts">Shirts</a></li>
+        <li><a href="category.html?category=jeans">Jeans</a></li>
+        <li><a href="category.html?category=skirts">Skirts</a></li>
+        <li><a href="category.html?category=pants">Pants</a></li>
+        <li><a href="category.html?category=sports">Sports</a></li>
       </ul>
     </div>
   </nav>

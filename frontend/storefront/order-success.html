@@ -8,29 +8,54 @@
   <link rel="stylesheet" href="css/customer.css">
 </head>
 <body class="store-page">
-  <header class="store-header">
-    <div class="store-header-inner">
-      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
-      <form class="store-search" role="search"><span class="material-symbols-outlined">search</span><input type="search" placeholder="What are you looking for?" aria-label="Search products"></form>
-      <nav class="store-actions" aria-label="Store actions">
-        <a class="store-icon-link" href="customer-login.html" aria-label="Account"><span class="material-symbols-outlined">account_circle</span></a>
-        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
-        <a class="store-icon-link" href="cart.html" aria-label="Cart"><span class="material-symbols-outlined">shopping_bag</span></a>
-      </nav>
-    </div>
-    <nav class="store-nav" aria-label="Categories">
-      <div class="store-nav-inner">
-        <a href="index.html">New In</a>
-        <a href="index.html">Dresses</a>
-        <a href="index.html">Abayas</a>
-        <a href="index.html">Jalabiyas</a>
-        <a href="index.html">Tops & Tees</a>
-        <a href="index.html">Jeans</a>
-        <a href="index.html">Skirts</a>
-        <a href="index.html">Sports</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="menu-trigger" type="button" aria-label="Open menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <a href="index.html" class="brand" aria-label="Orla Trends home">
+        <img src="assets/images/brand/orlalogo1.jpg" alt="Orla Trends" class="logo-img">
+      </a>
+
+      <form class="search-form" role="search">
+        <button class="search-icon-btn" type="submit" aria-label="Search">
+          <span class="material-symbols-outlined">search</span>
+        </button>
+        <input class="search-input" type="search" placeholder="What are you looking for?" aria-label="Search products">
+      </form>
+
+      <div class="header-actions">
+        <a href="customer-login.html" class="action-link account-link" aria-label="Account">
+          <span class="material-symbols-outlined">account_circle</span>
+          <span class="desktop-only">Sign In</span>
+        </a>
+        <a href="wishlist.html" class="action-link wishlist-link" aria-label="Wishlist">
+          <span class="material-symbols-outlined">favorite</span>
+        </a>
+        <a href="cart.html" class="action-link cart-link" aria-label="Cart">
+          <span class="material-symbols-outlined">shopping_cart_checkout</span>
+        </a>
       </div>
-    </nav>
+    </div>
   </header>
+
+  <nav class="site-nav" aria-label="Main navigation">
+    <div class="nav-window">
+      <ul class="nav-list" id="storefrontCategoryNav">
+        <li><a href="category.html?category=new-in">New In</a></li>
+        <li><a href="category.html?category=dresses">Dresses</a></li>
+        <li><a href="category.html?category=abayas">Abayas</a></li>
+        <li><a href="category.html?category=tops-tees">Tops & Tees</a></li>
+        <li><a href="category.html?category=jalabiyas">Jalabiyas</a></li>
+        <li><a href="category.html?category=shirts">Shirts</a></li>
+        <li><a href="category.html?category=jeans">Jeans</a></li>
+        <li><a href="category.html?category=skirts">Skirts</a></li>
+        <li><a href="category.html?category=pants">Pants</a></li>
+        <li><a href="category.html?category=sports">Sports</a></li>
+      </ul>
+    </div>
+  </nav>
   <main class="store-container">
     <nav class="crumbs"><a href="orders.html">My Orders</a><span>/</span><strong>Order Details</strong></nav>
     <div class="toast is-visible" style="position:static;transform:none;margin:0 0 18px;width:max-content;max-width:100%;">Order received successfully</div>
@@ -51,12 +76,12 @@
       </aside>
     </section>
   </main>
-  <nav class="mobile-commerce-nav" aria-label="Mobile bottom navigation">
-    <a href="index.html"><span class="material-symbols-outlined">home</span><span>Home</span></a>
-    <a href="category.html?category=new-in"><span class="material-symbols-outlined">category</span><span>Categories</span></a>
-    <a href="index.html#sale"><span class="material-symbols-outlined">sell</span><span>Sale</span></a>
-    <a class="is-active" href="customer-login.html"><span class="material-symbols-outlined">person_add</span><span>Account</span></a>
-    <a href="cart.html"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
+  <nav class="mobile-bottom-nav" aria-label="Mobile bottom navigation">
+    <a href="index.html" class="bottom-link"><span class="material-symbols-outlined">home</span><span>Home</span></a>
+    <a href="category.html?category=new-in" class="bottom-link"><span class="material-symbols-outlined">category</span><span>Categories</span></a>
+    <a href="index.html#sale" class="bottom-link"><span class="material-symbols-outlined">sell</span><span>Sale</span></a>
+    <a href="customer-login.html" class="bottom-link"><span class="material-symbols-outlined">person_add</span><span>Account</span></a>
+    <a href="cart.html" class="bottom-link is-active"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
   </nav>
   <script src="js/commerce-flow.js"></script>
   <script src="js/customer-auth.js"></script>

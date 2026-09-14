@@ -11,29 +11,54 @@
   <link rel="stylesheet" href="css/customer.css">
 </head>
 <body class="store-page wishlist-page">
-  <header class="store-header checkout-header">
-    <div class="store-header-inner checkout-header-inner">
-      <button class="checkout-menu-trigger" type="button" aria-label="Open menu">
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="menu-trigger" type="button" aria-label="Open menu">
         <span class="material-symbols-outlined">menu</span>
       </button>
-      <a class="store-logo" href="index.html"><img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends"><span>OrlaTrends</span></a>
-      <nav class="store-actions checkout-header-actions" aria-label="Store actions">
-        <a class="store-icon-link" href="wishlist.html" aria-label="Wishlist"><span class="material-symbols-outlined">favorite</span></a>
-      </nav>
-    </div>
-    <nav class="store-nav" aria-label="Categories">
-      <div class="store-nav-inner">
-        <a href="category.html?category=new-in">New In</a>
-        <a href="category.html?category=dresses">Dresses</a>
-        <a href="category.html?category=abayas">Abayas</a>
-        <a href="category.html?category=jalabiyas">Jalabiyas</a>
-        <a href="category.html?category=tops-tees">Tops & Tees</a>
-        <a href="category.html?category=jeans">Jeans</a>
-        <a href="category.html?category=skirts">Skirts</a>
-        <a href="category.html?category=sports">Sports</a>
+
+      <a href="index.html" class="brand" aria-label="Orla Trends home">
+        <img src="assets/images/brand/orlalogo1.jpg" alt="Orla Trends" class="logo-img">
+      </a>
+
+      <form class="search-form" role="search">
+        <button class="search-icon-btn" type="submit" aria-label="Search">
+          <span class="material-symbols-outlined">search</span>
+        </button>
+        <input class="search-input" type="search" placeholder="What are you looking for?" aria-label="Search products">
+      </form>
+
+      <div class="header-actions">
+        <a href="customer-login.html" class="action-link account-link" aria-label="Account">
+          <span class="material-symbols-outlined">account_circle</span>
+          <span class="desktop-only">Sign In</span>
+        </a>
+        <a href="wishlist.html" class="action-link wishlist-link" aria-label="Wishlist">
+          <span class="material-symbols-outlined">favorite</span>
+        </a>
+        <a href="cart.html" class="action-link cart-link" aria-label="Cart">
+          <span class="material-symbols-outlined">shopping_cart_checkout</span>
+        </a>
       </div>
-    </nav>
+    </div>
   </header>
+
+  <nav class="site-nav" aria-label="Main navigation">
+    <div class="nav-window">
+      <ul class="nav-list" id="storefrontCategoryNav">
+        <li><a href="category.html?category=new-in">New In</a></li>
+        <li><a href="category.html?category=dresses">Dresses</a></li>
+        <li><a href="category.html?category=abayas">Abayas</a></li>
+        <li><a href="category.html?category=tops-tees">Tops & Tees</a></li>
+        <li><a href="category.html?category=jalabiyas">Jalabiyas</a></li>
+        <li><a href="category.html?category=shirts">Shirts</a></li>
+        <li><a href="category.html?category=jeans">Jeans</a></li>
+        <li><a href="category.html?category=skirts">Skirts</a></li>
+        <li><a href="category.html?category=pants">Pants</a></li>
+        <li><a href="category.html?category=sports">Sports</a></li>
+      </ul>
+    </div>
+  </nav>
   <main class="wishlist-main" aria-labelledby="wishlistTitle">
     <div class="wishlist-title-row">
       <a class="wishlist-back" href="index.html" aria-label="Back to shopping">
@@ -43,14 +68,17 @@
         <h1 id="wishlistTitle">Wishlist</h1>
         <p id="wishlistCount">0 items</p>
       </div>
-      <button class="wishlist-edit-toggle" id="editWishlist" type="button" aria-pressed="false">EDIT</button>
+      <button class="wishlist-edit-toggle" id="editWishlist" type="button" aria-pressed="false">
+        <span class="material-symbols-outlined" aria-hidden="true">edit_note</span>
+        EDIT
+      </button>
     </div>
 
     <section id="wishlistGrid" class="wishlist-content" aria-live="polite"></section>
   </main>
 
   <div class="drawer-backdrop" id="drawerBackdrop"></div>
-  <aside class="size-drawer" id="sizeDrawer" aria-hidden="true" aria-label="Add wishlist item to bag">
+  <aside class="size-drawer" id="sizeDrawer" aria-hidden="true" aria-label="Select size and continue to checkout">
     <div class="drawer-content">
       <div class="drawer-head">
         <button class="drawer-close" id="closeDrawer" type="button" aria-label="Close">x</button>
@@ -59,10 +87,10 @@
       <div class="drawer-body">
         <strong>Size</strong>
         <div class="size-row-shop" id="sizeChoices"></div>
-        <p class="page-subtitle">Pick a size to move this wishlist item into your bag.</p>
+        <p class="page-subtitle">Pick a size to continue directly to checkout.</p>
       </div>
       <div class="drawer-foot">
-        <button class="bag-btn" id="drawerAddToBag" type="button">Add to Bag</button>
+        <button class="bag-btn" id="drawerAddToBag" type="button">Continue</button>
       </div>
     </div>
   </aside>
@@ -79,12 +107,12 @@
     </button>
   </div>
 
-  <nav class="mobile-commerce-nav" aria-label="Mobile bottom navigation">
-    <a href="index.html"><span class="material-symbols-outlined">home</span><span>Home</span></a>
-    <a href="category.html?category=new-in"><span class="material-symbols-outlined">category</span><span>Categories</span></a>
-    <a href="index.html#sale"><span class="material-symbols-outlined">sell</span><span>Sale</span></a>
-    <a href="customer-login.html"><span class="material-symbols-outlined">person_add</span><span>Account</span></a>
-    <a href="cart.html"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
+  <nav class="mobile-bottom-nav" aria-label="Mobile bottom navigation">
+    <a href="index.html" class="bottom-link is-active"><span class="material-symbols-outlined">home</span><span>Home</span></a>
+    <a href="category.html?category=new-in" class="bottom-link"><span class="material-symbols-outlined">category</span><span>Categories</span></a>
+    <a href="index.html#sale" class="bottom-link"><span class="material-symbols-outlined">sell</span><span>Sale</span></a>
+    <a href="customer-login.html" class="bottom-link"><span class="material-symbols-outlined">person_add</span><span>Account</span></a>
+    <a href="cart.html" class="bottom-link"><span class="material-symbols-outlined">shopping_cart_checkout</span><span>Cart</span></a>
   </nav>
 
   <script src="js/commerce-flow.js"></script>

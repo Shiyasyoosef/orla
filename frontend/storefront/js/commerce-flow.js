@@ -71,8 +71,29 @@ const OrlaFlow = (() => {
     return parse(localStorage.getItem(wishlistKey)).map(normalizeProduct);
   }
 
+  function wishlistCount() {
+    return wishlist().length;
+  }
+
+  function updateWishlistBadges() {
+    const total = wishlistCount();
+    document.querySelectorAll(".wishlist-link").forEach((link) => {
+      let badge = link.querySelector(".wishlist-count-badge");
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "wishlist-count-badge";
+        badge.setAttribute("aria-hidden", "true");
+        link.appendChild(badge);
+      }
+      badge.textContent = total > 99 ? "99+" : String(total);
+      badge.hidden = total === 0;
+      link.setAttribute("aria-label", total ? `Wishlist, ${total} ${total === 1 ? "item" : "items"}` : "Wishlist");
+    });
+  }
+
   function saveWishlist(items) {
     localStorage.setItem(wishlistKey, JSON.stringify((items || []).map(normalizeProduct)));
+    updateWishlistBadges();
   }
 
   function isWishlisted(id) {
@@ -126,8 +147,18 @@ const OrlaFlow = (() => {
     defaultProducts,
     normalizeProduct,
     wishlist,
+    wishlistCount,
     saveWishlist,
     isWishlisted,
-    toggleWishlist
+    toggleWishlist,
+    updateWishlistBadges
   };
 })();
+
+window.OrlaFlow = OrlaFlow;
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => OrlaFlow.updateWishlistBadges());
+} else {
+  OrlaFlow.updateWishlistBadges();
+}

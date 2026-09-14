@@ -140,7 +140,7 @@
           <span class="wishlist-delivery">TOMORROW</span>
           <small>Free delivery</small>
           <div class="wishlist-card-actions">
-            <button class="wishlist-add-bag" type="button" data-add-bag ${state.editMode ? "disabled" : ""}>Add to Bag</button>
+            <button class="wishlist-add-bag" type="button" data-add-bag ${state.editMode ? "disabled" : ""}>Buy Now</button>
             <button class="wishlist-delete" type="button" data-delete-item>
               Delete
             </button>
@@ -186,7 +186,9 @@
     state.editMode = enabled;
     if (!enabled) state.selectedIds.clear();
     document.body.classList.toggle("wishlist-edit-mode", enabled);
-    editButton.textContent = enabled ? "× CANCEL" : "EDIT";
+    editButton.innerHTML = enabled
+      ? '<span class="material-symbols-outlined" aria-hidden="true">close</span> CANCEL'
+      : '<span class="material-symbols-outlined" aria-hidden="true">edit_note</span> EDIT';
     editButton.setAttribute("aria-pressed", String(enabled));
     render();
   }
@@ -202,6 +204,7 @@
   function closeDrawer() {
     drawer.classList.remove("is-open");
     backdrop.classList.remove("is-open");
+    document.body.classList.remove("wishlist-size-drawer-open");
     drawer.setAttribute("aria-hidden", "true");
   }
 
@@ -221,6 +224,7 @@
     )).join("");
     drawer.classList.add("is-open");
     backdrop.classList.add("is-open");
+    document.body.classList.add("wishlist-size-drawer-open");
     drawer.setAttribute("aria-hidden", "false");
   }
 
@@ -298,9 +302,9 @@
 
   drawerAdd.addEventListener("click", () => {
     if (!state.drawerProduct) return;
-    OrlaFlow.addToCart({ ...state.drawerProduct, size: state.drawerSize, quantity: 1 });
-    showToast("Added to bag");
-    closeDrawer();
+    OrlaFlow.set([{ ...state.drawerProduct, size: state.drawerSize, quantity: 1 }]);
+    OrlaFlow.saveCheckout({ source: "wishlist", buyNowProductId: state.drawerProduct.id });
+    window.location.href = "checkout.html";
   });
 
   document.querySelector("#closeDrawer").addEventListener("click", closeDrawer);

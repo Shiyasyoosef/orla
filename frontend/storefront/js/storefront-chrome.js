@@ -8,6 +8,7 @@
     ["Shirts", "category.html?category=shirts"],
     ["Jeans", "category.html?category=jeans"],
     ["Skirts", "category.html?category=skirts"],
+    ["Pants", "category.html?category=pants"],
     ["Sports", "category.html?category=sports"]
   ];
 
@@ -44,42 +45,53 @@
   }
 
   function injectHeader() {
-    if (document.querySelector(".orla-page-header")) return;
+    if (document.querySelector(".site-header")) return;
     document.body.insertAdjacentHTML("afterbegin", `
-      <header class="orla-page-header">
-        <div class="orla-header-inner">
-          <button class="orla-menu-btn" type="button" aria-label="Open menu">☰</button>
-          <a class="orla-brand" href="index.html" aria-label="OrlaTrends home">
-            <img src="assets/images/brand/orlalogo1.jpg" alt="OrlaTrends">
+      <header class="site-header">
+        <div class="header-inner">
+          <button class="menu-trigger" type="button" aria-label="Open menu">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <a href="index.html" class="brand" aria-label="Orla Trends home">
+            <img src="assets/images/brand/orlalogo1.jpg" alt="Orla Trends" class="logo-img">
           </a>
-          <form class="orla-search" action="index.html" role="search">
-            <span aria-hidden="true">⌕</span>
-            <input type="search" name="q" placeholder="What are you looking for?" aria-label="Search products">
+          <form class="search-form" role="search">
+            <button class="search-icon-btn" type="submit" aria-label="Search">
+              <span class="material-symbols-outlined">search</span>
+            </button>
+            <input class="search-input" type="search" placeholder="What are you looking for?" aria-label="Search products">
           </form>
-          <nav class="orla-header-actions" aria-label="Customer links">
-            <a class="orla-action-link orla-sign-in" href="customer-login.html" aria-label="Sign in"><span aria-hidden="true">◎</span><span>Sign In</span></a>
-            <a class="orla-action-link orla-wishlist-link" href="wishlist.html" aria-label="Wishlist">♡</a>
-            <a class="orla-action-link orla-cart-link" href="cart.html" aria-label="Cart">🛒</a>
-          </nav>
+          <div class="header-actions">
+            <a href="customer-login.html" class="action-link account-link" aria-label="Account">
+              <span class="material-symbols-outlined">account_circle</span>
+              <span class="desktop-only">Sign In</span>
+            </a>
+            <a href="wishlist.html" class="action-link wishlist-link" aria-label="Wishlist">
+              <span class="material-symbols-outlined">favorite</span>
+            </a>
+            <a href="cart.html" class="action-link cart-link" aria-label="Cart">
+              <span class="material-symbols-outlined">shopping_cart_checkout</span>
+            </a>
+          </div>
         </div>
       </header>
-      <nav class="orla-site-nav" aria-label="Main navigation">
-        <div class="orla-nav-scroll">
-          <ul class="orla-nav-list">${linkList(categories)}</ul>
+      <nav class="site-nav" aria-label="Main navigation">
+        <div class="nav-window">
+          <ul class="nav-list" id="storefrontCategoryNav">${linkList(categories)}</ul>
         </div>
       </nav>
     `);
   }
 
   function injectBottomNav() {
-    if (document.querySelector(".orla-mobile-bottom")) return;
+    if (document.querySelector(".mobile-bottom-nav")) return;
     const active = currentFile();
     const html = bottomLinks.map(([icon, label, href]) => {
       const targetFile = href.split("?")[0].split("#")[0].toLowerCase();
       const isActive = active === targetFile || (active === "category.html" && label === "Categories");
-      return `<a class="orla-bottom-link${isActive ? " is-active" : ""}" href="${href}"><span class="material-symbols-outlined" aria-hidden="true">${icon}</span><span>${label}</span></a>`;
+      return `<a class="bottom-link${isActive ? " is-active" : ""}" href="${href}"><span class="material-symbols-outlined" aria-hidden="true">${icon}</span><span>${label}</span></a>`;
     }).join("");
-    document.body.insertAdjacentHTML("beforeend", `<nav class="orla-mobile-bottom" aria-label="Mobile bottom navigation">${html}</nav>`);
+    document.body.insertAdjacentHTML("beforeend", `<nav class="mobile-bottom-nav" aria-label="Mobile bottom navigation">${html}</nav>`);
   }
 
   function injectFooter() {
@@ -99,5 +111,6 @@
     injectHeader();
     injectFooter();
     injectBottomNav();
+    if (typeof OrlaFlow !== "undefined") OrlaFlow.updateWishlistBadges();
   });
 })();
