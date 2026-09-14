@@ -112,5 +112,6 @@
     injectFooter();
     injectBottomNav();
     if (typeof OrlaFlow !== "undefined") OrlaFlow.updateWishlistBadges();
+    if (typeof OrlaFlow !== "undefined") OrlaFlow.initMobileMenu();
   });
 })();
